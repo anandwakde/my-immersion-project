@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MEA Payment Intelligence Monitor — Waitlist</title>
+<meta name="description" content="An AI agent that monitors 13+ MEA payment scheme and network portals and inboxes every morning, reads every circular, and tells compliance teams what's mandatory, what's optional, and how many days are left." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg: #6C5CE7;
+    --bg-deep: #5B4BD6;
+    --bg-deeper: #4E3FC4;
+    --card: #FFFFFF;
+    --card-soft: #F4F2FF;
+    --gold: #F5B93F;
+    --gold-dim: rgba(245,185,63,0.4);
+    --overdue: #E8564C;
+    --due-soon: #F5B93F;
+    --on-track: #34C38F;
+
+    --text-hi: #FFFFFF;
+    --text-mid: rgba(255,255,255,0.72);
+    --text-low: rgba(255,255,255,0.5);
+
+    --ink: #2B2350;
+    --ink-mid: rgba(43,35,80,0.6);
+    --ink-low: rgba(43,35,80,0.4);
+
+    --border-soft: rgba(255,255,255,0.12);
+    --border-mid: rgba(255,255,255,0.18);
+    --border-strong: rgba(255,255,255,0.28);
+
+    --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+    --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px; --sp-10: 140px;
+
+    --radius-sm: 14px;
+    --radius-doc: 24px;
+    --radius-md: 20px;
+
+    --shadow-doc: 0 20px 40px -16px rgba(30,20,80,0.35);
+    --shadow-doc-hover: 0 24px 48px -14px rgba(30,20,80,0.42);
+
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--bg);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  h1,h2,h3,h4{ margin: 0; font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+  p{ margin: 0; text-wrap: pretty; }
+  a{ color: inherit; }
+  img{ max-width: 100%; display: block; }
+
+  ::selection{ background: rgba(245,185,63,0.35); color: var(--text-hi); }
+
+  :focus-visible{
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .wrap{
+    max-width: 1160px;
+    margin: 0 auto;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
+  }
+
+  .mono{ font-family: var(--font-mono); letter-spacing: 0.02em; font-weight: 500; }
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(91,75,214,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav-inner{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--sp-4);
+    padding-bottom: var(--sp-4);
+  }
+  .wordmark{
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-hi);
+  }
+  .wordmark span{ color: var(--text-low); font-weight: 400; }
+  .live-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-mid);
+    border: 1px solid var(--border-mid);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  .live-dot{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--on-track);
+    animation: dotpulse 2.4s ease-in-out infinite;
+  }
+  @keyframes dotpulse{
+    0%, 100%{ opacity: 1; }
+    50%{ opacity: 0.35; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding-top: var(--sp-9);
+    padding-bottom: var(--sp-9);
+  }
+  .hero-grid{
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: var(--sp-9);
+    align-items: center;
+  }
+  .eyebrow{
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin-bottom: var(--sp-5);
+  }
+  .eyebrow::before{
+    content: "";
+    width: 18px; height: 1px;
+    background: var(--gold-dim);
+  }
+  .hero h1{
+    font-size: clamp(2.4rem, 1.4rem + 2.6vw, 3.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--text-hi);
+    font-weight: 600;
+  }
+  .hero h1 em{
+    font-style: normal;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .hero-sub{
+    margin-top: var(--sp-5);
+    max-width: 46ch;
+    font-size: 18px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  .waitlist-form{
+    margin-top: var(--sp-7);
+    display: flex;
+    gap: var(--sp-3);
+    max-width: 440px;
+  }
+  .waitlist-form input[type="email"]{
+    flex: 1;
+    min-width: 0;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    font-size: 15px;
+  }
+  .waitlist-form input[type="email"]::placeholder{ color: var(--text-low); }
+  .waitlist-form input[type="email"]:hover{ border-color: var(--border-strong); }
+
+  .btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    border-radius: 999px;
+    padding: 13px 24px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 140ms var(--ease-out), background 140ms var(--ease-out);
+  }
+  .btn:hover{ background: #ffc65c; }
+  .btn:active{ transform: scale(0.97); }
+
+  .hero-note{
+    margin-top: var(--sp-4);
+    font-size: 13px;
+    color: var(--text-low);
+  }
+
+  .form-error{
+    display: none;
+    margin-top: var(--sp-3);
+    font-size: 13px;
+    color: #ffd7d2;
+  }
+  .form-error.is-visible{ display: block; }
+
+  .confirm-card{
+    display: none;
+    margin-top: var(--sp-7);
+    max-width: 440px;
+    background: var(--card);
+    border-radius: var(--radius-doc);
+    padding: var(--sp-5);
+    box-shadow: var(--shadow-doc);
+  }
+  .confirm-card.is-visible{ display: block; }
+  .confirm-card .stamp-mini{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--on-track);
+    background: rgba(52,195,143,0.14);
+    border-radius: 999px;
+    padding: 6px 14px;
+    animation: pop 0.4s var(--ease-out) 0.15s both;
+  }
+  .confirm-card .stamp-mini::before{
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  @keyframes pop{
+    from{ opacity: 0; transform: scale(0.85); }
+    to{ opacity: 1; transform: scale(1); }
+  }
+  .confirm-card p{
+    margin-top: var(--sp-3);
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .confirm-card .ref{
+    margin-top: var(--sp-2);
+    font-size: 12px;
+    color: var(--ink-low);
+  }
+
+  /* ---------- INTAKE (signature visual) ---------- */
+  .intake{
+    position: relative;
+    height: 380px;
+  }
+  .scrap{
+    position: absolute;
+    width: 168px;
+    background: var(--card-soft);
+    border-radius: 16px;
+    padding: var(--sp-3) var(--sp-4);
+    box-shadow: 0 12px 28px -12px rgba(30,20,80,0.3);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    line-height: 1.5;
+  }
+  .scrap span{ display: block; color: var(--ink-low); margin-top: 3px; font-weight: 400; }
+
+  .scrap-1{ top: 6%; left: 2%; animation: scrapConverge1 3.2s var(--ease-out) 0.4s both; }
+  .scrap-2{ top: 2%; right: 8%; animation: scrapConverge2 3.2s var(--ease-out) 0.7s both; }
+  .scrap-3{ bottom: 14%; left: 0%; animation: scrapConverge3 3.2s var(--ease-out) 1.0s both; }
+  .scrap-4{ bottom: 4%; right: 4%; animation: scrapConverge4 3.2s var(--ease-out) 1.3s both; }
+
+  @keyframes scrapConverge1{
+    0%{ opacity: 1; transform: translate(0,0) rotate(-9deg); }
+    65%{ opacity: 1; }
+    100%{ opacity: 0; transform: translate(90px, 70px) rotate(2deg); }
+  }
+  @keyframes scrapConverge2{
+    0%{ opacity: 1; transform: translate(0,0) rotate(7deg); }
+    65%{ opacity: 1; }
+    100%{ opacity: 0; transform: translate(-70px, 90px) rotate(-2deg); }
+  }
+  @keyframes scrapConverge3{
+    0%{ opacity: 1; transform: translate(0,0) rotate(6deg); }
+    65%{ opacity: 1; }
+    100%{ opacity: 0; transform: translate(80px, -60px) rotate(2deg); }
+  }
+  @keyframes scrapConverge4{
+    0%{ opacity: 1; transform: translate(0,0) rotate(-5deg); }
+    65%{ opacity: 1; }
+    100%{ opacity: 0; transform: translate(-90px, -50px) rotate(-2deg); }
+  }
+
+  .case-file{
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 300px;
+    transform: translate(-50%,-50%) scale(0.94);
+    background: var(--card);
+    border-radius: var(--radius-doc);
+    padding: var(--sp-5);
+    box-shadow: var(--shadow-doc);
+    opacity: 0;
+    animation: caseIn 0.7s var(--ease-out) 2.0s forwards;
+  }
+  @keyframes caseIn{
+    from{ opacity: 0; transform: translate(-50%,-50%) scale(0.94); }
+    to{ opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  }
+
+  .card-top{ display: flex; align-items: center; gap: var(--sp-3); }
+  .icon-tile{
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: var(--card-soft);
+    display: flex; align-items: center; justify-content: center;
+    animation: float 3.4s ease-in-out infinite;
+  }
+  .icon-tile svg{ width: 24px; height: 24px; }
+  @keyframes float{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-5px); }
+  }
+  .card-top-text{ flex: 1; min-width: 0; }
+  .scheme-label{ font-size: 12px; font-weight: 500; color: var(--ink-mid); }
+  .circular-title{ margin-top: 2px; font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+
+  .flow{ position: relative; height: 36px; margin: var(--sp-3) 0; }
+  .flow svg{ width: 100%; height: 100%; overflow: visible; }
+  .flow-path{
+    fill: none;
+    stroke: var(--card-soft);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 6 10;
+    animation: dash 1.6s linear infinite;
+  }
+  @keyframes dash{ to{ stroke-dashoffset: -32; } }
+
+  .status-row{ display: flex; align-items: center; justify-content: space-between; }
+  .urgency-tag{ font-size: 11.5px; font-weight: 600; color: var(--ink-mid); }
+  .status-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .status-pill::before{ content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .status-pill.overdue{ background: rgba(232,86,76,0.14); color: var(--overdue); }
+  .status-pill.due-soon{ background: rgba(245,185,63,0.18); color: #b8791f; }
+  .status-pill.on-track{ background: rgba(52,195,143,0.14); color: var(--on-track); }
+
+  .ref{
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-3);
+    border-top: 1px solid rgba(43,35,80,0.1);
+    font-size: 11px;
+    color: var(--ink-low);
+    text-align: right;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scrap, .case-file{ animation: none !important; }
+    .scrap{ opacity: 0; }
+    .case-file{ opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    .live-dot, .icon-tile{ animation: none; }
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{ padding-top: var(--sp-10); padding-bottom: var(--sp-10); }
+  .section-head{ max-width: 62ch; margin-bottom: var(--sp-8); }
+  .section-label{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin-bottom: var(--sp-4);
+    display: block;
+  }
+  .section-head h2{
+    font-size: clamp(1.7rem, 1.3rem + 1.2vw, 2.3rem);
+    line-height: 1.22;
+    color: var(--text-hi);
+  }
+  .section-head p{
+    margin-top: var(--sp-4);
+    color: var(--text-mid);
+    font-size: 16.5px;
+  }
+
+  .reveal{ opacity: 0; transform: translateY(14px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+  .reveal.is-visible{ opacity: 1; transform: translateY(0); }
+
+  /* ---------- LOG SECTION ---------- */
+  .log-panel{
+    background: var(--card);
+    border-radius: var(--radius-doc);
+    padding: var(--sp-6);
+    box-shadow: var(--shadow-doc);
+  }
+  .log-row{
+    display: grid;
+    grid-template-columns: 96px 20px 1fr;
+    gap: var(--sp-4);
+    align-items: baseline;
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid rgba(43,35,80,0.08);
+  }
+  .log-row:last-of-type{ border-bottom: none; }
+  .log-time{ font-family: var(--font-body); font-size: 12.5px; color: var(--ink-low); }
+  .log-dot{ width: 8px; height: 8px; border-radius: 50%; align-self: center; }
+  .log-dot.ok{ background: var(--on-track); opacity: 0.5; }
+  .log-dot.miss{ background: var(--overdue); }
+  .log-entry{ font-size: 15px; color: var(--ink-mid); }
+  .log-entry strong{ color: var(--ink); font-weight: 600; }
+
+  .log-total{
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-6);
+    border-top: 1px solid rgba(43,35,80,0.12);
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-5);
+  }
+  .log-total .figure{
+    font-family: var(--font-body);
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--overdue);
+    font-variant-numeric: tabular-nums;
+  }
+  .log-total .label{ color: var(--ink-mid); font-size: 15px; max-width: 32ch; }
+
+  /* ---------- FEATURES ---------- */
+  .feature-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-6);
+  }
+  .feature-card{
+    background: var(--card);
+    border-radius: var(--radius-doc);
+    padding: var(--sp-7);
+    box-shadow: var(--shadow-doc);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  }
+  .feature-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-doc-hover); }
+  .feature-num{
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-low);
+    letter-spacing: 0.04em;
+  }
+  .feature-card h3{
+    margin-top: var(--sp-3);
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .feature-card p{
+    margin-top: var(--sp-3);
+    color: var(--ink-mid);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  .portal-grid{
+    margin-top: var(--sp-5);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-2);
+  }
+  .portal{
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    background: var(--card-soft);
+    border-radius: 10px;
+    padding: 7px 4px;
+    text-align: center;
+    position: relative;
+  }
+  .portal.alert{ color: var(--overdue); background: rgba(232,86,76,0.12); }
+  .portal.alert::after{
+    content: "";
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--overdue);
+  }
+
+  .extract-mock{
+    margin-top: var(--sp-5);
+    display: flex;
+    gap: var(--sp-4);
+    align-items: stretch;
+  }
+  .extract-doc{
+    flex: 1;
+    background: var(--card-soft);
+    border-radius: 14px;
+    padding: var(--sp-3);
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    color: var(--ink-low);
+    line-height: 1.7;
+  }
+  .extract-fields{ flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .extract-fields .row{ display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 12px; }
+  .extract-fields .k{ color: var(--ink-low); }
+  .extract-fields .v{ color: var(--ink); font-weight: 600; }
+  .extract-fields .v.urgent{ color: var(--overdue); }
+
+  /* ---------- ROLES ---------- */
+  .role-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-6);
+  }
+  .role-card{
+    border-radius: var(--radius-doc);
+    padding: var(--sp-7);
+    background: var(--card);
+    box-shadow: var(--shadow-doc);
+  }
+  .role-tag{
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+  }
+  .role-card h3{
+    margin-top: var(--sp-3);
+    font-size: 21px;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 600;
+  }
+  .role-card p{
+    margin-top: var(--sp-3);
+    color: var(--ink-mid);
+    font-size: 15.5px;
+  }
+
+  /* ---------- RISK BAND ---------- */
+  .risk-band{
+    background: linear-gradient(180deg, var(--bg-deeper), var(--bg-deep));
+    border-top: 1px solid var(--border-mid);
+    border-bottom: 1px solid var(--border-mid);
+  }
+  .risk-inner{ max-width: 760px; }
+  .risk-band h2{
+    font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
+    color: var(--text-hi);
+    line-height: 1.3;
+  }
+  .risk-band p{
+    margin-top: var(--sp-5);
+    color: var(--text-mid);
+    font-size: 16.5px;
+    max-width: 58ch;
+  }
+  .risk-tags{ margin-top: var(--sp-6); display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+  .risk-tag{
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffd7d2;
+    background: rgba(232,86,76,0.18);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+
+  /* ---------- FINAL CTA ---------- */
+  .cta-card{
+    background: var(--card);
+    border-radius: var(--radius-doc);
+    padding: var(--sp-9) var(--sp-8);
+    box-shadow: var(--shadow-doc);
+    text-align: center;
+  }
+  .cta-card h2{
+    font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+    color: var(--ink);
+  }
+  .cta-card p{
+    margin-top: var(--sp-4);
+    color: var(--ink-mid);
+    font-size: 16.5px;
+  }
+  .cta-form{
+    margin-top: var(--sp-7);
+    display: flex;
+    gap: var(--sp-3);
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-form input[type="email"]{
+    flex: 1;
+    min-width: 0;
+    background: var(--card-soft);
+    border: 1px solid rgba(43,35,80,0.14);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+  }
+  .cta-note{ margin-top: var(--sp-4); font-size: 13px; color: var(--ink-low); }
+
+  .cta-confirm{
+    display: none;
+    margin-top: var(--sp-7);
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-confirm.is-visible{ display: block; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-8);
+    border-top: 1px solid var(--border-soft);
+  }
+  .footer-inner{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+  .footer-inner p{ color: var(--text-low); font-size: 13px; }
+
+  @media (max-width: 880px){
+    .wrap{ padding-left: var(--sp-5); padding-right: var(--sp-5); }
+    .nav-inner{ flex-wrap: wrap; row-gap: var(--sp-2); }
+    .wordmark span{ display: none; }
+    .live-pill{ font-size: 11px; padding: 5px 10px; }
+    .hero-grid{ grid-template-columns: 1fr; gap: var(--sp-7); }
+    .intake{ height: 320px; order: -1; }
+    .feature-grid, .role-grid{ grid-template-columns: 1fr; }
+    section{ padding-top: var(--sp-8); padding-bottom: var(--sp-8); }
+    .waitlist-form, .cta-form{ flex-direction: column; }
+    .portal-grid{ grid-template-columns: repeat(3, 1fr); }
+    .cta-card{ padding: var(--sp-7) var(--sp-5); }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <div class="wordmark">MEA·PIM <span>/ Payment Intelligence Monitor</span></div>
+      <div class="live-pill"><span class="live-dot"></span> monitoring live · 13 sources</div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">MEA PAYMENT INTELLIGENCE MONITOR</span>
+        <h1>The circular was published three weeks ago. <em>Nobody on your team saw it.</em></h1>
+        <p class="hero-sub">An AI agent that checks 13+ scheme and network portals and inboxes every morning, reads every PDF, and tells you what's mandatory, what's optional, and how many days you have left.</p>
+
+        <div id="hero-pending">
+          <form class="waitlist-form" id="hero-form">
+            <label for="hero-email" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Work email</label>
+            <input type="email" id="hero-email" placeholder="you@bank-or-psp.com" required autocomplete="email" />
+            <button type="submit" class="btn">Join the monitoring list</button>
+          </form>
+          <p class="hero-note">For compliance PMs and Ops teams at banks, PSPs, and vendors across the region.</p>
+          <p class="form-error" id="hero-error"></p>
+        </div>
+
+        <div class="confirm-card" id="hero-confirm">
+          <span class="stamp-mini">REGISTERED</span>
+          <p>You're on the list. We'll reach out before the next circular deadline — not after.</p>
+          <p class="ref mono" id="hero-ref"></p>
+        </div>
+      </div>
+
+      <div class="intake" aria-hidden="true">
+        <div class="scrap scrap-1">VISA.COM<span>PDF · 2 pages</span></div>
+        <div class="scrap scrap-2">inbox@compliance<span>.eml attachment</span></div>
+        <div class="scrap scrap-3">MASTERCARD PORTAL<span>PDF · circular</span></div>
+        <div class="scrap scrap-4">MADA BULLETINS<span>PDF · notice</span></div>
+        <div class="case-file">
+          <div class="card-top">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="2" width="16" height="20" rx="3" fill="#6C5CE7"/>
+                <rect x="7" y="6" width="10" height="1.6" rx="0.8" fill="#fff" opacity="0.8"/>
+                <rect x="7" y="10" width="10" height="1.6" rx="0.8" fill="#fff" opacity="0.6"/>
+                <rect x="7" y="14" width="6" height="1.6" rx="0.8" fill="#fff" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="card-top-text">
+              <div class="scheme-label">VISA</div>
+              <div class="circular-title">Cross-border QR interoperability circular</div>
+            </div>
+          </div>
+          <div class="flow">
+            <svg viewBox="0 0 260 36" preserveAspectRatio="none">
+              <path class="flow-path" d="M14,8 C80,8 66,30 130,30 C194,30 180,8 246,8" />
+            </svg>
+          </div>
+          <div class="status-row">
+            <span class="urgency-tag">MANDATORY</span>
+            <span class="status-pill due-soon">14 DAYS LEFT</span>
+          </div>
+          <div class="ref">VISA / 2026 / 014</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-label">THE MONDAY MORNING REALITY</span>
+        <h2>This is what "10 to 12 hours a week" actually looks like.</h2>
+        <p>Not one big task. Dozens of small checks, most of them for nothing — until the one that mattered slips through.</p>
+      </div>
+
+      <div class="log-panel reveal">
+        <div class="log-row">
+          <div class="log-time mono">MON 09:14</div>
+          <div class="log-dot ok"></div>
+          <div class="log-entry">Checked <strong>Visa</strong> portal. Nothing new.</div>
+        </div>
+        <div class="log-row">
+          <div class="log-time mono">MON 09:41</div>
+          <div class="log-dot ok"></div>
+          <div class="log-entry">Checked <strong>Mastercard</strong> circulars page. Nothing new.</div>
+        </div>
+        <div class="log-row">
+          <div class="log-time mono">TUE 08:55</div>
+          <div class="log-dot ok"></div>
+          <div class="log-entry">Checked <strong>mada</strong> bulletin index. Nothing new.</div>
+        </div>
+        <div class="log-row">
+          <div class="log-time mono">WED 10:02</div>
+          <div class="log-dot miss"></div>
+          <div class="log-entry">Re-checked <strong>Meeza</strong> — missed Circular 2026/009, published 11 days ago.</div>
+        </div>
+        <div class="log-row">
+          <div class="log-time mono">WED 14:30</div>
+          <div class="log-dot miss"></div>
+          <div class="log-entry">Escalation email: <strong>"implement this by Friday."</strong></div>
+        </div>
+        <div class="log-row">
+          <div class="log-time mono">THU–FRI</div>
+          <div class="log-dot miss"></div>
+          <div class="log-entry">Overnight build to meet a deadline nobody flagged in time.</div>
+        </div>
+
+        <div class="log-total">
+          <div class="figure">11.5</div>
+          <div class="label">hours logged chasing PDFs this week — not solving compliance problems.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-label">TWO FEATURES, NOT A PLATFORM</span>
+        <h2>It watches. It reads. It tells you what matters.</h2>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card reveal">
+          <div class="feature-num mono">01 / MONITORING</div>
+          <h3>Always-on monitoring</h3>
+          <p>Scans every scheme and network portal and inbox each morning. No manual triggers, no missed mandates, no one's personal bookmark folder as the system of record.</p>
+          <div class="portal-grid">
+            <div class="portal">Visa</div><div class="portal">Mastercard</div><div class="portal">Mada</div><div class="portal">Meeza</div>
+            <div class="portal">Verve</div><div class="portal">Amex</div><div class="portal alert">UnionPay</div><div class="portal">KNET</div>
+            <div class="portal">Benefit</div><div class="portal">OmanNet</div><div class="portal">NAPS</div><div class="portal">GCCNET</div>
+            <div class="portal">JCB</div>
+          </div>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-num mono">02 / EXTRACTION</div>
+          <h3>AI extraction</h3>
+          <p>Reads every PDF end to end and pulls out what a person would have to hunt for: urgency, deadline, and who it actually applies to.</p>
+          <div class="extract-mock">
+            <div class="extract-doc">CIRCULAR NO. 2026/014<br/>RE: QR CODE<br/>INTEROPERABILITY —<br/>ACQUIRERS AND PSPs<br/>SHALL IMPLEMENT...<br/>EFFECTIVE WITHIN 14<br/>CALENDAR DAYS OF...</div>
+            <div class="extract-fields">
+              <div class="row"><span class="k">Urgency</span><span class="v urgent">MANDATORY</span></div>
+              <div class="row"><span class="k">Deadline</span><span class="v">14 days</span></div>
+              <div class="row"><span class="k">Scope</span><span class="v">PSPs, Vendors</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-label">BUILT FOR TWO DESKS</span>
+        <h2>Same feed. Two different jobs.</h2>
+      </div>
+
+      <div class="role-grid">
+        <div class="role-card reveal">
+          <div class="role-tag mono">PRODUCT MANAGER</div>
+          <h3>Scope every circular before the standup</h3>
+          <p>In-scope, out-of-scope, optional, or opt-in — decided from a clean summary, not from re-reading a 12-page PDF at 8am.</p>
+        </div>
+        <div class="role-card reveal">
+          <div class="role-tag mono">OPS TEAM</div>
+          <h3>Stop refreshing 13 different portals</h3>
+          <p>One feed, dated and stamped, with a record of what was checked and when — the audit trail you'd otherwise have to build by hand.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="risk-band">
+    <div class="wrap risk-inner reveal">
+      <h2>Missed circulars aren't a process problem. They're a penalty line item.</h2>
+      <p>Client banks pay the fine. PSPs and vendors pay to keep the promise of compliance they made to their clients. Either way, someone's margin shrinks for a PDF that nobody saw in time.</p>
+      <div class="risk-tags">
+        <span class="risk-tag">real deadlines</span>
+        <span class="risk-tag">real penalties</span>
+        <span class="risk-tag">zero grace period</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="cta-card reveal">
+        <h2>Get on the monitoring list.</h2>
+        <p>We'll reach out before the next circular deadline — not after.</p>
+        <div id="cta-pending">
+          <form class="cta-form" id="cta-form">
+            <label for="cta-email" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Work email</label>
+            <input type="email" id="cta-email" placeholder="you@bank-or-psp.com" required autocomplete="email" />
+            <button type="submit" class="btn">Join the monitoring list</button>
+          </form>
+          <p class="cta-note">No spam. Just the circulars that matter, before they're overdue.</p>
+          <p class="form-error" id="cta-error"></p>
+        </div>
+
+        <div class="cta-confirm confirm-card" id="cta-confirm">
+          <span class="stamp-mini">REGISTERED</span>
+          <p>You're on the list. We'll reach out before the next circular deadline — not after.</p>
+          <p class="ref mono" id="cta-ref"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <div class="wordmark">MEA·PIM</div>
+      <p>MEA Payment Intelligence Monitor — built for compliance teams across the region.</p>
+    </div>
+  </footer>
+
+<script>
+  (function(){
+    var CONVEX_SITE_URL = 'https://calculating-ptarmigan-789.convex.site';
+
+    function wireForm(formId, pendingId, confirmId, refId, errorId){
+      var form = document.getElementById(formId);
+      var pendingEl = document.getElementById(pendingId);
+      var confirmEl = document.getElementById(confirmId);
+      var refEl = document.getElementById(refId);
+      var errorEl = document.getElementById(errorId);
+      if(!form) return;
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var emailInput = form.querySelector('input[type="email"]');
+        var btn = form.querySelector('button[type="submit"]');
+        var originalLabel = btn.textContent;
+
+        errorEl.classList.remove('is-visible');
+        btn.disabled = true;
+        btn.textContent = 'Joining…';
+
+        fetch(CONVEX_SITE_URL + '/submit-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput.value, source: formId })
+        })
+          .then(function(res){
+            if(!res.ok) throw new Error('request failed');
+            return res.json();
+          })
+          .then(function(data){
+            refEl.textContent = 'Reference ' + data.reference;
+            pendingEl.style.display = 'none';
+            confirmEl.classList.add('is-visible');
+          })
+          .catch(function(){
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+            errorEl.textContent = "Couldn't save that — check your connection and try again.";
+            errorEl.classList.add('is-visible');
+          });
+      });
+    }
+
+    wireForm('hero-form', 'hero-pending', 'hero-confirm', 'hero-ref', 'hero-error');
+    wireForm('cta-form', 'cta-pending', 'cta-confirm', 'cta-ref', 'cta-error');
+
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  })();
+</script>
+
+</body>
+</html>

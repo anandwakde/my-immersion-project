@@ -1,0 +1,8 @@
+node_modules
+convex
+package.json
+package-lock.json
+.env.local
+.agents
+.claude
+skills-lock.json

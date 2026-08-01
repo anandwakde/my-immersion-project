@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MEA Payment Intelligence Monitor — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #6C5CE7;
+    --bg-deep: #5B4BD6;
+    --card: #FFFFFF;
+    --card-soft: #F4F2FF;
+    --gold: #F5B93F;
+    --ink: #2B2350;
+    --ink-mid: rgba(43,35,80,0.6);
+    --ink-low: rgba(43,35,80,0.4);
+
+    --overdue: #E8564C;
+    --due-soon: #F5B93F;
+    --on-track: #34C38F;
+
+    --font-body: 'Poppins', -apple-system, sans-serif;
+
+    --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .nav{
+    padding: var(--sp-5) var(--sp-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wordmark{
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .wordmark span{ color: rgba(255,255,255,0.6); font-weight: 400; }
+
+  main{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--sp-6);
+  }
+
+  h1{
+    font-weight: 600;
+    font-size: 26px;
+    color: #fff;
+    margin: 0 0 var(--sp-5) 0;
+  }
+
+  .filter-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-6);
+  }
+  .filter-chips{ display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+  .filter-chip{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .filter-chip:hover{ background: rgba(255,255,255,0.22); }
+  .filter-chip.active{ background: var(--gold); color: var(--ink); font-weight: 600; }
+
+  .scheme-select{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .scheme-select option{ color: var(--ink); }
+
+  .empty-state{ color: rgba(255,255,255,0.6); font-size: 14px; }
+
+  .circular-card{
+    position: relative;
+    background: var(--card);
+    border-radius: 28px;
+    padding: var(--sp-6);
+    box-shadow: 0 20px 40px -16px rgba(30, 20, 80, 0.35);
+  }
+
+  .card-top{
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+
+  .icon-tile{
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--card-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 3.4s ease-in-out infinite;
+  }
+  .icon-tile svg{ width: 32px; height: 32px; }
+  .icon-tile.error-icon-tile{ background: rgba(232,86,76,0.12); animation: none; }
+
+  @keyframes float{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-6px); }
+  }
+
+  .card-top-text{ flex: 1; min-width: 0; }
+  .scheme-label{
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    letter-spacing: 0.02em;
+  }
+  .circular-title{
+    margin-top: 2px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .flow{
+    position: relative;
+    height: 56px;
+    margin: var(--sp-4) 0;
+  }
+  .flow svg{ width: 100%; height: 100%; overflow: visible; }
+  .flow-path{
+    fill: none;
+    stroke: var(--card-soft);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 6 10;
+    animation: dash 1.6s linear infinite;
+  }
+  @keyframes dash{
+    to{ stroke-dashoffset: -32; }
+  }
+
+  .status-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .status-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 8px 16px;
+    border-radius: 999px;
+    animation: pop 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
+  }
+  .status-pill::before{
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .status-pill.overdue{ background: rgba(232,86,76,0.12); color: var(--overdue); }
+  .status-pill.due-soon{ background: rgba(245,185,63,0.16); color: #b8791f; }
+  .status-pill.on-track{ background: rgba(52,195,143,0.14); color: var(--on-track); }
+  .status-pill.informational{ background: rgba(52,195,143,0.14); color: var(--on-track); }
+
+  @keyframes pop{
+    from{ opacity: 0; transform: scale(0.85); }
+    to{ opacity: 1; transform: scale(1); }
+  }
+
+  .urgency-tag{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-mid);
+  }
+  .urgency-tag.mandatory{ color: var(--overdue); }
+  .urgency-tag.optional{ color: #b8791f; }
+  .urgency-tag.informational{ color: var(--on-track); }
+
+  .scope-tag{
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    max-width: 60%;
+  }
+
+  .effective-date{
+    margin-top: var(--sp-4);
+    font-size: 12.5px;
+    color: var(--ink-mid);
+  }
+  .effective-date strong{ color: var(--ink); font-weight: 600; }
+
+  .ref{
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--card-soft);
+    font-size: 12px;
+    color: var(--ink-low);
+    text-align: right;
+  }
+  .ref a{ color: var(--ink-mid); text-decoration: underline; }
+  .ref a:hover{ color: var(--ink); }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wordmark">MEA·PIM <span>/ Dashboard</span></div>
+  </nav>
+
+  <main>
+    <h1>Circulars</h1>
+
+    <div class="filter-bar">
+      <div class="filter-chips" id="status-filters">
+        <button type="button" class="filter-chip active" data-status="all">All</button>
+        <button type="button" class="filter-chip" data-status="error">Error</button>
+        <button type="button" class="filter-chip" data-status="overdue">Overdue</button>
+        <button type="button" class="filter-chip" data-status="due-soon">Due Soon</button>
+        <button type="button" class="filter-chip" data-status="on-track">On Track</button>
+        <button type="button" class="filter-chip" data-status="informational">Informational</button>
+      </div>
+      <select class="scheme-select" id="scheme-filter">
+        <option value="all">All schemes</option>
+      </select>
+    </div>
+
+    <div id="circular-list">
+      <p style="color: rgba(255,255,255,0.6); font-size: 14px;">Loading circulars…</p>
+    </div>
+  </main>
+
+<script>
+  (function(){
+    var CONVEX_SITE_URL = 'https://calculating-ptarmigan-789.convex.site';
+
+    function escapeHtml(str){
+      var div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    var STATUS_LABELS = {
+      'informational': { cls: 'informational', text: 'INFORMATIONAL' },
+      'overdue': { cls: 'overdue', text: 'OVERDUE' },
+      'due-soon': { cls: 'due-soon', text: 'DUE SOON' },
+      'on-track': { cls: 'on-track', text: 'ON TRACK' }
+    };
+
+    function statusPillFor(status){
+      return STATUS_LABELS[status] || { cls: 'due-soon', text: escapeHtml(status || 'UNKNOWN').toUpperCase() };
+    }
+
+    function iconSvg(){
+      return '<svg viewBox="0 0 24 24" fill="none">' +
+        '<rect x="4" y="2" width="16" height="20" rx="3" fill="#6C5CE7"/>' +
+        '<rect x="7" y="6" width="10" height="1.6" rx="0.8" fill="#fff" opacity="0.8"/>' +
+        '<rect x="7" y="10" width="10" height="1.6" rx="0.8" fill="#fff" opacity="0.6"/>' +
+        '<rect x="7" y="14" width="6" height="1.6" rx="0.8" fill="#fff" opacity="0.6"/>' +
+        '</svg>';
+    }
+
+    function errorIconSvg(){
+      return '<svg viewBox="0 0 24 24" fill="none">' +
+        '<path d="M12 3 L22 20 L2 20 Z" fill="#E8564C" opacity="0.9"/>' +
+        '<rect x="11" y="9" width="2" height="6" rx="1" fill="#fff"/>' +
+        '<rect x="11" y="16" width="2" height="2" rx="1" fill="#fff"/>' +
+        '</svg>';
+    }
+
+    function renderCircular(c){
+      var pill = statusPillFor(c.status);
+      return '' +
+        '<div class="circular-card">' +
+          '<div class="card-top">' +
+            '<div class="icon-tile">' + iconSvg() + '</div>' +
+            '<div class="card-top-text">' +
+              '<div class="scheme-label">' + escapeHtml((c.scheme || '').toUpperCase()) + '</div>' +
+              '<div class="circular-title">' + escapeHtml(c.title) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flow"><svg viewBox="0 0 400 56" preserveAspectRatio="none">' +
+            '<path class="flow-path" d="M20,10 C120,10 100,46 200,46 C300,46 280,10 380,10" />' +
+          '</svg></div>' +
+          '<div class="status-row">' +
+            '<span class="scope-tag">' + escapeHtml(c.scope) + '</span>' +
+            '<span class="status-pill ' + pill.cls + '">' + pill.text + '</span>' +
+          '</div>' +
+          '<div class="effective-date">Effective date: <strong>' + escapeHtml(c.deadline) + '</strong></div>' +
+          '<div class="ref"><a href="' + escapeHtml(c.sourceUrl) + '" target="_blank" rel="noopener">View source &#8599;</a></div>' +
+        '</div>';
+    }
+
+    function renderErrorRow(c){
+      return '' +
+        '<div class="circular-card error-card">' +
+          '<div class="card-top">' +
+            '<div class="icon-tile error-icon-tile">' + errorIconSvg() + '</div>' +
+            '<div class="card-top-text">' +
+              '<div class="scheme-label">SOURCE UNREADABLE</div>' +
+              '<div class="circular-title">Couldn\'t process &mdash; retry</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="status-row">' +
+            '<span class="scope-tag">' + escapeHtml(c.errorMessage || 'Unknown error') + '</span>' +
+            '<span class="status-pill overdue">ERROR</span>' +
+          '</div>' +
+          '<div class="ref"><a href="' + escapeHtml(c.sourceUrl) + '" target="_blank" rel="noopener">View attempted source &#8599;</a></div>' +
+        '</div>';
+    }
+
+    var container = document.getElementById('circular-list');
+    var statusFilterBar = document.getElementById('status-filters');
+    var schemeSelect = document.getElementById('scheme-filter');
+
+    var allCirculars = [];
+    var currentStatus = 'all';
+    var currentScheme = 'all';
+
+    function renderList(list){
+      if(!list.length){
+        container.innerHTML = '<p class="empty-state">No circulars match this filter.</p>';
+        return;
+      }
+      container.innerHTML = list.map(function(c){
+        return c.failed ? renderErrorRow(c) : renderCircular(c);
+      }).join('');
+    }
+
+    function applyFilters(){
+      var filtered = allCirculars.filter(function(c){
+        var statusOk = currentStatus === 'all' || c.status === currentStatus;
+        var schemeOk = currentScheme === 'all' || c.scheme === currentScheme;
+        return statusOk && schemeOk;
+      });
+      renderList(filtered);
+    }
+
+    function populateSchemeOptions(list){
+      var schemes = [];
+      list.forEach(function(c){
+        if(c.scheme && schemes.indexOf(c.scheme) === -1) schemes.push(c.scheme);
+      });
+      schemes.sort();
+      schemes.forEach(function(scheme){
+        var opt = document.createElement('option');
+        opt.value = scheme;
+        opt.textContent = scheme;
+        schemeSelect.appendChild(opt);
+      });
+    }
+
+    statusFilterBar.addEventListener('click', function(e){
+      var btn = e.target.closest('.filter-chip');
+      if(!btn) return;
+      currentStatus = btn.getAttribute('data-status');
+      statusFilterBar.querySelectorAll('.filter-chip').forEach(function(el){
+        el.classList.toggle('active', el === btn);
+      });
+      applyFilters();
+    });
+
+    schemeSelect.addEventListener('change', function(){
+      currentScheme = schemeSelect.value;
+      applyFilters();
+    });
+
+    fetch(CONVEX_SITE_URL + '/circulars')
+      .then(function(res){
+        if(!res.ok) throw new Error('request failed');
+        return res.json();
+      })
+      .then(function(list){
+        allCirculars = list;
+        if(!list.length){
+          container.innerHTML = '<p class="empty-state">No circulars yet.</p>';
+          return;
+        }
+        populateSchemeOptions(list);
+        applyFilters();
+      })
+      .catch(function(){
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.8); font-size: 14px;">Couldn\'t load circulars — check your connection and reload.</p>';
+      });
+  })();
+</script>
+
+</body>
+</html>
