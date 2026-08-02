@@ -1,5 +1,6 @@
 import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { TEAMS } from "./tasks";
 
 export const create = internalMutation({
   args: {
@@ -12,21 +13,30 @@ export const create = internalMutation({
     sourceUrl: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert("circulars", args);
-  },
-});
+    const circularId = await ctx.db.insert("circulars", args);
 
-export const createFailedAttempt = internalMutation({
-  args: {
-    sourceUrl: v.string(),
-    errorMessage: v.string(),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.insert("circulars", {
-      sourceUrl: args.sourceUrl,
-      errorMessage: args.errorMessage,
-      failed: true,
+    await ctx.db.insert("auditLog", {
+      circularId,
+      action: "circular_ingested",
+      detail: `"${args.title}" ingested from ${args.scheme} (${args.urgency})`,
     });
+
+    for (const team of TEAMS) {
+      const taskId = await ctx.db.insert("tasks", {
+        circularId,
+        team,
+        deadline: args.deadlineDate ?? null,
+        status: "open",
+      });
+      await ctx.db.insert("auditLog", {
+        circularId,
+        taskId,
+        action: "task_created",
+        detail: `Task created for ${team}`,
+      });
+    }
+
+    return circularId;
   },
 });
 

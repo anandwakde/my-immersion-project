@@ -11,6 +11,8 @@ const EXTRACTION_PROMPT = (rawText: string) => `You are extracting structured co
 
 For "urgency": the document often states its own classification directly (for example a field literally labeled "Action Indicator", "Category", or similar — such as "No Action", "Action Required", "Mandatory", "For Your Information"). If the document states this explicitly, use that stated classification rather than inferring urgency from the general tone of the text. Restrictive-sounding language (e.g. "changes are discouraged" or "not required to validate") does not by itself mean "mandatory" — only classify as "mandatory" if the document explicitly requires the customer to take an action, and "informational" if the document explicitly says no action is required.
 
+If the text is a "Summary of Changes" style table listing multiple distinct rule changes, each with its own effective date and impacted rules, do NOT summarize the whole table generically. Instead, pick the single change with the nearest or most significant effective date, and report title/deadline/deadlineDate/scope for that one specific change only — treat it exactly as if it were the only circular in the text. A rule change with a stated "Effective" date is a real compliance deadline customers must meet by that date, so classify it as "mandatory" unless the document says otherwise, not "informational" — do not default to "N/A"/"informational" just because other items exist alongside it.
+
 Circular text:
 """
 ${rawText}

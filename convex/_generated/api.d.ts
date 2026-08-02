@@ -10,12 +10,19 @@
 
 import type * as circulars from "../circulars.js";
 import type * as crons from "../crons.js";
+import type * as digest from "../digest.js";
 import type * as extract from "../extract.js";
 import type * as http from "../http.js";
 import type * as pipeline from "../pipeline.js";
 import type * as scan from "../scan.js";
+import type * as scanAmex from "../scanAmex.js";
+import type * as scanKnet from "../scanKnet.js";
 import type * as scanMada from "../scanMada.js";
+import type * as scanUnionPay from "../scanUnionPay.js";
+import type * as scanVisa from "../scanVisa.js";
 import type * as status from "../status.js";
+import type * as subscribers from "../subscribers.js";
+import type * as tasks from "../tasks.js";
 import type * as waitlist from "../waitlist.js";
 
 import type {
@@ -27,12 +34,19 @@ import type {
 declare const fullApi: ApiFromModules<{
   circulars: typeof circulars;
   crons: typeof crons;
+  digest: typeof digest;
   extract: typeof extract;
   http: typeof http;
   pipeline: typeof pipeline;
   scan: typeof scan;
+  scanAmex: typeof scanAmex;
+  scanKnet: typeof scanKnet;
   scanMada: typeof scanMada;
+  scanUnionPay: typeof scanUnionPay;
+  scanVisa: typeof scanVisa;
   status: typeof status;
+  subscribers: typeof subscribers;
+  tasks: typeof tasks;
   waitlist: typeof waitlist;
 }>;
 
