@@ -41,7 +41,7 @@
 
   .hero{
     padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
-    max-width: 720px;
+    max-width: 1280px;
     margin: 0 auto;
   }
   .product-title{
@@ -73,7 +73,7 @@
   .main-tab:hover{ background: rgba(255,255,255,0.1); color: #fff; }
   .main-tab.active{ background: #fff; color: var(--ink); }
 
-  main{ max-width: 720px; margin: 0 auto; padding: var(--sp-6); }
+  main{ max-width: 1280px; margin: 0 auto; padding: var(--sp-6); }
 
   .tab-panel{ display: none; }
   .tab-panel.active{ display: block; }
@@ -119,7 +119,13 @@
   }
   .scheme-select option{ color: var(--ink); }
 
-  .empty-state{ color: rgba(255,255,255,0.6); font-size: 14px; }
+  .empty-state{ color: rgba(255,255,255,0.6); font-size: 14px; grid-column: 1 / -1; }
+
+  .card-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--sp-4);
+  }
 
   /* ---------- SUBSCRIBE TAB ---------- */
   .subscribe-intro{ font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: var(--sp-5); }
@@ -169,59 +175,50 @@
   .circular-card{
     position: relative;
     background: var(--card);
-    border-radius: 28px;
-    padding: var(--sp-6);
-    box-shadow: 0 20px 40px -16px rgba(30, 20, 80, 0.35);
-    margin-bottom: var(--sp-3);
+    border-radius: 22px;
+    padding: var(--sp-5);
+    box-shadow: 0 14px 28px -14px rgba(30, 20, 80, 0.35);
+    display: flex;
+    flex-direction: column;
   }
 
-  .card-top{ display: flex; align-items: center; gap: var(--sp-4); }
+  .card-top{ display: flex; align-items: center; gap: var(--sp-3); }
 
   .icon-tile{
     flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     background: var(--card-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: float 3.4s ease-in-out infinite;
   }
-  .icon-tile svg{ width: 32px; height: 32px; }
-
-  @keyframes float{
-    0%, 100%{ transform: translateY(0); }
-    50%{ transform: translateY(-6px); }
-  }
+  .icon-tile svg{ width: 22px; height: 22px; }
 
   .card-top-text{ flex: 1; min-width: 0; }
-  .scheme-label{ font-size: 13px; font-weight: 500; color: var(--ink-mid); letter-spacing: 0.02em; }
-  .circular-title{ margin-top: 2px; font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .scheme-label{ font-size: 11.5px; font-weight: 600; color: var(--ink-mid); letter-spacing: 0.03em; }
+  .circular-title{ margin-top: 2px; font-size: 15.5px; font-weight: 600; color: var(--ink); line-height: 1.3; }
 
-  .flow{ position: relative; height: 56px; margin: var(--sp-4) 0; }
-  .flow svg{ width: 100%; height: 100%; overflow: visible; }
-  .flow-path{
-    fill: none;
-    stroke: var(--card-soft);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-dasharray: 6 10;
-    animation: dash 1.6s linear infinite;
+  .status-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-3);
+    margin-top: var(--sp-4);
   }
-  @keyframes dash{ to{ stroke-dashoffset: -32; } }
-
-  .status-row{ display: flex; align-items: center; justify-content: space-between; }
 
   .status-pill{
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.02em;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 999px;
+    white-space: nowrap;
     animation: pop 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
   }
   .status-pill::before{ content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
@@ -235,22 +232,17 @@
     to{ opacity: 1; transform: scale(1); }
   }
 
-  .urgency-tag{ font-size: 12px; font-weight: 600; color: var(--ink-mid); }
-  .urgency-tag.mandatory{ color: var(--overdue); }
-  .urgency-tag.optional{ color: #b8791f; }
-  .urgency-tag.informational{ color: var(--on-track); }
-
-  .scope-tag{ font-size: 12.5px; font-weight: 500; color: var(--ink-mid); max-width: 60%; }
+  .scope-tag{ font-size: 12px; font-weight: 500; color: var(--ink-mid); }
   .scope-tag strong{ color: var(--ink); font-weight: 600; }
 
-  .effective-date{ margin-top: var(--sp-4); font-size: 12.5px; color: var(--ink-mid); }
+  .effective-date{ margin-top: var(--sp-3); font-size: 12px; color: var(--ink-mid); }
   .effective-date strong{ color: var(--ink); font-weight: 600; }
 
   .ref{
-    margin-top: var(--sp-5);
-    padding-top: var(--sp-4);
+    margin-top: auto;
+    padding-top: var(--sp-3);
     border-top: 1px solid var(--card-soft);
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--ink-low);
     text-align: right;
   }
@@ -258,18 +250,20 @@
   .ref a:hover{ color: var(--ink); }
 
   /* ---------- TASKS TAB ---------- */
-  .task-list{ display: flex; flex-direction: column; gap: var(--sp-3); margin-bottom: var(--sp-7); }
+  .task-list{ margin-bottom: var(--sp-7); }
 
   .task-row{
     background: var(--card);
     border-radius: 18px;
-    padding: var(--sp-5);
+    padding: var(--sp-4) var(--sp-5);
     box-shadow: 0 14px 28px -14px rgba(30, 20, 80, 0.35);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-4);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
   }
+  .task-row .task-action{ align-self: stretch; }
+  .task-row .btn-complete, .task-row .done-badge{ width: 100%; text-align: center; }
   .task-row.done{ opacity: 0.55; }
   .task-info{ min-width: 0; }
   .task-scheme{ font-size: 11.5px; font-weight: 600; color: var(--ink-mid); letter-spacing: 0.03em; }
@@ -304,6 +298,126 @@
     white-space: nowrap;
   }
 
+  /* ---------- UPLOAD TAB ---------- */
+  .upload-form{ max-width: 460px; }
+  .upload-field{ margin-bottom: var(--sp-4); }
+  .upload-label{ display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: var(--sp-2); }
+  .upload-form input[type="file"]{
+    display: block;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .upload-form select, .upload-form input[type="text"]{
+    display: block;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 999px;
+    padding: 10px 16px;
+  }
+  .upload-form select option{ color: var(--ink); }
+  .upload-form input[type="text"]::placeholder{ color: rgba(255,255,255,0.5); }
+  .btn-upload{
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 24px;
+    cursor: pointer;
+  }
+  .btn-upload:disabled{ opacity: 0.6; cursor: default; }
+  .upload-status{ margin-top: var(--sp-4); font-size: 13px; color: rgba(255,255,255,0.8); min-height: 18px; }
+  .upload-status.error{ color: var(--overdue); font-weight: 600; }
+  .upload-status.success{ color: var(--on-track); font-weight: 600; }
+
+  /* ---------- CALENDAR TAB ---------- */
+  .calendar-header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-5);
+  }
+  .calendar-nav-btn{
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+  .calendar-nav-btn:hover{ background: rgba(255,255,255,0.22); }
+  .calendar-month-label{ font-size: 17px; font-weight: 600; color: #fff; min-width: 160px; text-align: center; }
+
+  .calendar-weekdays{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+  }
+  .calendar-weekdays span{
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.03em;
+  }
+
+  .calendar-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-6);
+  }
+  .calendar-day{
+    aspect-ratio: 1;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+  .calendar-day.empty{ background: transparent; }
+  .calendar-day-num{ font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.65); }
+  .calendar-day.has-items{ cursor: pointer; background: rgba(255,255,255,0.16); }
+  .calendar-day.has-items:hover{ background: rgba(255,255,255,0.26); }
+  .calendar-day.has-items .calendar-day-num{ color: #fff; font-weight: 700; }
+  .calendar-day.today{ box-shadow: inset 0 0 0 2px var(--gold); }
+  .calendar-day.selected{ background: var(--gold); }
+  .calendar-day.selected .calendar-day-num{ color: var(--ink); }
+
+  .calendar-dots{ display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+  .calendar-dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--on-track); }
+  .calendar-dot.overdue{ background: var(--overdue); }
+  .calendar-dot.due-soon{ background: var(--due-soon); }
+  .calendar-dot.on-track{ background: var(--on-track); }
+  .calendar-dot.informational{ background: var(--on-track); }
+
+  @media (max-width: 600px){
+    .calendar-day-num{ font-size: 11px; }
+    .calendar-dot{ width: 5px; height: 5px; }
+  }
+
   .audit-section h2{ font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 var(--sp-4) 0; }
   .audit-panel{
     background: rgba(0,0,0,0.14);
@@ -323,6 +437,133 @@
 
   @media (max-width: 600px){
     .main-tabs{ flex-wrap: wrap; }
+    .card-grid{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- CHAT WIDGET ---------- */
+  .chat-toggle{
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .chat-toggle svg{ width: 24px; height: 24px; }
+
+  .chat-widget{
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    height: 460px;
+    max-height: calc(100vh - 140px);
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+  }
+  .chat-widget.open{ display: flex; }
+
+  .chat-widget-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--bg-deep);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .chat-close{
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .chat-thread{
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .chat-bubble{
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .chat-bubble.user{
+    align-self: flex-end;
+    background: var(--bg-deep);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-bubble.assistant{
+    align-self: flex-start;
+    background: var(--card-soft);
+    color: var(--ink);
+    border-bottom-left-radius: 4px;
+  }
+  .chat-bubble.assistant.thinking{ color: var(--ink-mid); font-style: italic; }
+  .chat-bubble.assistant.error{ background: rgba(232,86,76,0.12); color: var(--overdue); }
+
+  .chat-input-form{
+    display: flex;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    border-top: 1px solid var(--card-soft);
+    flex-shrink: 0;
+  }
+  .chat-input-form input[type="text"]{
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--card-soft);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .chat-send-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .chat-send-btn:disabled{ opacity: 0.5; cursor: default; }
+
+  @media (max-width: 600px){
+    .chat-widget{ width: calc(100vw - 32px); right: 16px; bottom: 84px; height: 420px; }
+    .chat-toggle{ right: 16px; bottom: 16px; }
   }
 </style>
 </head>
@@ -333,6 +574,8 @@
     <div class="main-tabs" id="main-tabs">
       <button type="button" class="main-tab active" data-tab="circulars">Circulars</button>
       <button type="button" class="main-tab" data-tab="tasks">Tasks</button>
+      <button type="button" class="main-tab" data-tab="calendar">Calendar</button>
+      <button type="button" class="main-tab" data-tab="upload">Upload</button>
       <button type="button" class="main-tab" data-tab="subscribe">Subscribe</button>
     </div>
   </header>
@@ -354,7 +597,7 @@
         </select>
       </div>
 
-      <div id="circular-list">
+      <div id="circular-list" class="card-grid">
         <p class="empty-state">Loading circulars…</p>
       </div>
     </section>
@@ -370,7 +613,7 @@
         <button type="button" class="team-tab" data-team="Bank">Bank</button>
       </div>
 
-      <div class="task-list" id="task-list">
+      <div class="task-list card-grid" id="task-list">
         <p class="empty-state">Loading tasks…</p>
       </div>
 
@@ -380,6 +623,45 @@
           <p class="empty-state">Loading audit trail…</p>
         </div>
       </div>
+    </section>
+
+    <!-- ---------- CALENDAR TAB ---------- -->
+    <section class="tab-panel" id="panel-calendar">
+      <div class="calendar-header">
+        <button type="button" class="calendar-nav-btn" id="cal-prev" aria-label="Previous month">&#8249;</button>
+        <div class="calendar-month-label" id="cal-month-label"></div>
+        <button type="button" class="calendar-nav-btn" id="cal-next" aria-label="Next month">&#8250;</button>
+      </div>
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <h2 class="section-heading" id="calendar-detail-heading">Select a day to see what's due</h2>
+      <div class="card-grid" id="calendar-detail-list"></div>
+    </section>
+
+    <!-- ---------- UPLOAD TAB ---------- -->
+    <section class="tab-panel" id="panel-upload">
+      <h2 class="section-heading">Upload a circular</h2>
+      <p class="subscribe-intro">Got a circular the automated scanners don't cover? Upload the PDF directly.</p>
+      <form class="upload-form" id="upload-form">
+        <div class="upload-field">
+          <label class="upload-label" for="upload-file">PDF file</label>
+          <input type="file" id="upload-file" accept="application/pdf" required />
+        </div>
+        <div class="upload-field">
+          <label class="upload-label" for="upload-scheme">Scheme</label>
+          <select id="upload-scheme">
+            <option value="__other__">Other (type below)</option>
+          </select>
+        </div>
+        <div class="upload-field" id="upload-scheme-other-field">
+          <label class="upload-label" for="upload-scheme-other">Scheme name</label>
+          <input type="text" id="upload-scheme-other" placeholder="e.g. JCB" />
+        </div>
+        <button type="submit" class="btn-upload">Upload &amp; process</button>
+      </form>
+      <p class="upload-status" id="upload-status"></p>
     </section>
 
     <!-- ---------- SUBSCRIBE TAB ---------- -->
@@ -395,6 +677,29 @@
     </section>
 
   </main>
+
+  <button type="button" class="chat-toggle" id="chat-toggle" aria-label="Open chat assistant">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="#2B2350"/>
+      <circle cx="8" cy="10.5" r="1.1" fill="#F5B93F"/>
+      <circle cx="12" cy="10.5" r="1.1" fill="#F5B93F"/>
+      <circle cx="16" cy="10.5" r="1.1" fill="#F5B93F"/>
+    </svg>
+  </button>
+
+  <div class="chat-widget" id="chat-widget">
+    <div class="chat-widget-header">
+      <span>Ask the assistant</span>
+      <button type="button" class="chat-close" id="chat-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="chat-thread" id="chat-thread">
+      <p class="empty-state">Ask about overdue items, deadlines, or anything in your circulars/tasks.</p>
+    </div>
+    <form class="chat-input-form" id="chat-input-form">
+      <input type="text" id="chat-input" placeholder="e.g. What's overdue for Legal?" autocomplete="off" />
+      <button type="submit" class="chat-send-btn" aria-label="Send">&#8594;</button>
+    </form>
+  </div>
 
 <script>
   (function(){
@@ -452,9 +757,6 @@
               '<div class="circular-title">' + escapeHtml(c.title) + '</div>' +
             '</div>' +
           '</div>' +
-          '<div class="flow"><svg viewBox="0 0 400 56" preserveAspectRatio="none">' +
-            '<path class="flow-path" d="M20,10 C120,10 100,46 200,46 C300,46 280,10 380,10" />' +
-          '</svg></div>' +
           '<div class="status-row">' +
             '<span class="scope-tag">Audience: <strong>' + escapeHtml(c.scope) + '</strong></span>' +
             '<span class="status-pill ' + pill.cls + '">' + pill.text + '</span>' +
@@ -506,6 +808,19 @@
       schemesContainer.innerHTML = schemes.map(function(scheme){
         return '<label class="scheme-check"><input type="checkbox" value="' + escapeHtml(scheme) + '" /> ' + escapeHtml(scheme) + '</label>';
       }).join('');
+
+      var uploadSchemeSelect = document.getElementById('upload-scheme');
+      var uploadOtherOption = uploadSchemeSelect.querySelector('option[value="__other__"]');
+      schemes.forEach(function(scheme){
+        var opt = document.createElement('option');
+        opt.value = scheme;
+        opt.textContent = scheme;
+        uploadSchemeSelect.insertBefore(opt, uploadOtherOption);
+      });
+      if(schemes.length){
+        uploadSchemeSelect.value = schemes[0];
+        toggleUploadSchemeOther();
+      }
     }
 
     statusFilterBar.addEventListener('click', function(e){
@@ -533,10 +848,114 @@
         }
         populateSchemeOptions(list);
         applyFilters();
+        initCalendar();
       })
       .catch(function(){
         circularContainer.innerHTML = '<p class="empty-state">Couldn\'t load circulars — check your connection and reload.</p>';
       });
+
+    /* ---------- CALENDAR ---------- */
+    var calGrid = document.getElementById('calendar-grid');
+    var calMonthLabel = document.getElementById('cal-month-label');
+    var calDetailHeading = document.getElementById('calendar-detail-heading');
+    var calDetailList = document.getElementById('calendar-detail-list');
+    var calPrevBtn = document.getElementById('cal-prev');
+    var calNextBtn = document.getElementById('cal-next');
+
+    var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var currentCalMonth = new Date();
+    currentCalMonth.setDate(1);
+    var selectedCalDate = null;
+
+    function pad2(n){ return n < 10 ? '0' + n : String(n); }
+    function ymd(y, m, d){ return y + '-' + pad2(m + 1) + '-' + pad2(d); }
+
+    function circularsByDate(){
+      var map = {};
+      allCirculars.forEach(function(c){
+        if(!c.deadlineDate) return;
+        if(!map[c.deadlineDate]) map[c.deadlineDate] = [];
+        map[c.deadlineDate].push(c);
+      });
+      return map;
+    }
+
+    function renderCalendarDetail(dateStr){
+      var map = circularsByDate();
+      if(!dateStr){
+        calDetailHeading.textContent = "Select a day to see what's due";
+        calDetailList.innerHTML = '';
+        return;
+      }
+      var items = map[dateStr] || [];
+      var d = new Date(dateStr + 'T00:00:00');
+      var label = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      calDetailHeading.textContent = label;
+      calDetailList.innerHTML = items.length
+        ? items.map(renderCircular).join('')
+        : '<p class="empty-state">Nothing due this day.</p>';
+    }
+
+    function renderCalendar(){
+      var year = currentCalMonth.getFullYear();
+      var month = currentCalMonth.getMonth();
+      calMonthLabel.textContent = MONTH_NAMES[month] + ' ' + year;
+
+      var map = circularsByDate();
+      var firstDayOfWeek = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var now = new Date();
+      var todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+
+      var html = '';
+      for(var i = 0; i < firstDayOfWeek; i++){
+        html += '<div class="calendar-day empty"></div>';
+      }
+      for(var day = 1; day <= daysInMonth; day++){
+        var dateStr = ymd(year, month, day);
+        var items = map[dateStr] || [];
+        var classes = 'calendar-day';
+        if(items.length) classes += ' has-items';
+        if(dateStr === todayStr) classes += ' today';
+        if(dateStr === selectedCalDate) classes += ' selected';
+        var dots = items.slice(0, 4).map(function(c){
+          var pill = statusPillFor(c.status);
+          return '<span class="calendar-dot ' + pill.cls + '"></span>';
+        }).join('');
+        html += '<div class="' + classes + '" data-date="' + dateStr + '">' +
+          '<span class="calendar-day-num">' + day + '</span>' +
+          (items.length ? '<span class="calendar-dots">' + dots + '</span>' : '') +
+          '</div>';
+      }
+      calGrid.innerHTML = html;
+    }
+
+    calGrid.addEventListener('click', function(e){
+      var cell = e.target.closest('.calendar-day.has-items');
+      if(!cell) return;
+      var dateStr = cell.getAttribute('data-date');
+      selectedCalDate = selectedCalDate === dateStr ? null : dateStr;
+      renderCalendar();
+      renderCalendarDetail(selectedCalDate);
+    });
+
+    calPrevBtn.addEventListener('click', function(){
+      currentCalMonth.setMonth(currentCalMonth.getMonth() - 1);
+      renderCalendar();
+    });
+    calNextBtn.addEventListener('click', function(){
+      currentCalMonth.setMonth(currentCalMonth.getMonth() + 1);
+      renderCalendar();
+    });
+
+    function initCalendar(){
+      var now = new Date();
+      var todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+      var map = circularsByDate();
+      selectedCalDate = map[todayStr] ? todayStr : null;
+      renderCalendar();
+      renderCalendarDetail(selectedCalDate);
+    }
 
     /* ---------- TASKS ---------- */
     var taskList = document.getElementById('task-list');
@@ -638,6 +1057,83 @@
     loadTasks();
     loadAuditLog();
 
+    /* ---------- UPLOAD ---------- */
+    var uploadForm = document.getElementById('upload-form');
+    var uploadFileInput = document.getElementById('upload-file');
+    var uploadSchemeSelect = document.getElementById('upload-scheme');
+    var uploadSchemeOtherField = document.getElementById('upload-scheme-other-field');
+    var uploadSchemeOtherInput = document.getElementById('upload-scheme-other');
+    var uploadStatus = document.getElementById('upload-status');
+
+    function toggleUploadSchemeOther(){
+      uploadSchemeOtherField.style.display = uploadSchemeSelect.value === '__other__' ? 'block' : 'none';
+    }
+    toggleUploadSchemeOther();
+    uploadSchemeSelect.addEventListener('change', toggleUploadSchemeOther);
+
+    uploadForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var file = uploadFileInput.files[0];
+      if(!file) return;
+      var scheme = uploadSchemeSelect.value === '__other__'
+        ? uploadSchemeOtherInput.value.trim()
+        : uploadSchemeSelect.value;
+      if(!scheme){
+        uploadStatus.className = 'upload-status error';
+        uploadStatus.textContent = 'Please enter a scheme name.';
+        return;
+      }
+
+      var submitBtn = uploadForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      uploadStatus.className = 'upload-status';
+      uploadStatus.textContent = 'Uploading…';
+
+      fetch(CONVEX_SITE_URL + '/upload-url', { method: 'POST' })
+        .then(function(res){ if(!res.ok) throw new Error('Could not get an upload URL'); return res.json(); })
+        .then(function(data){
+          return fetch(data.uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': file.type || 'application/pdf' },
+            body: file
+          });
+        })
+        .then(function(res){ if(!res.ok) throw new Error('File upload failed'); return res.json(); })
+        .then(function(data){
+          uploadStatus.textContent = 'Extracting fields — this can take up to a minute…';
+          return fetch(CONVEX_SITE_URL + '/process-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ storageId: data.storageId, scheme: scheme })
+          });
+        })
+        .then(function(res){ return res.json().then(function(body){ return { ok: res.ok, body: body }; }); })
+        .then(function(outcome){
+          submitBtn.disabled = false;
+          if(!outcome.ok){
+            uploadStatus.className = 'upload-status error';
+            uploadStatus.textContent = outcome.body.error || 'Something went wrong.';
+            return;
+          }
+          var r = outcome.body.result;
+          uploadStatus.className = 'upload-status success';
+          uploadStatus.textContent = 'Added: ' + r.title + ' (' + r.scheme + '). Check the Circulars tab to see it with its full status.';
+          uploadForm.reset();
+          toggleUploadSchemeOther();
+          return fetch(CONVEX_SITE_URL + '/circulars')
+            .then(function(res){ return res.json(); })
+            .then(function(list){
+              allCirculars = list;
+              applyFilters();
+            });
+        })
+        .catch(function(err){
+          submitBtn.disabled = false;
+          uploadStatus.className = 'upload-status error';
+          uploadStatus.textContent = err.message || 'Something went wrong.';
+        });
+    });
+
     /* ---------- SUBSCRIBE ---------- */
     var subscribeForm = document.getElementById('subscribe-form');
     var subscribeConfirm = document.getElementById('subscribe-confirm');
@@ -671,6 +1167,66 @@
           btn.textContent = originalLabel;
           subscribeConfirm.classList.add('error');
           subscribeConfirm.textContent = "Couldn't subscribe — check your connection and try again.";
+        });
+    });
+
+    /* ---------- CHAT ---------- */
+    var chatToggle = document.getElementById('chat-toggle');
+    var chatWidget = document.getElementById('chat-widget');
+    var chatClose = document.getElementById('chat-close');
+    var chatThread = document.getElementById('chat-thread');
+    var chatInputForm = document.getElementById('chat-input-form');
+    var chatInput = document.getElementById('chat-input');
+
+    function toggleChat(open){
+      chatWidget.classList.toggle('open', open);
+      if(open) chatInput.focus();
+    }
+    chatToggle.addEventListener('click', function(){
+      toggleChat(!chatWidget.classList.contains('open'));
+    });
+    chatClose.addEventListener('click', function(){ toggleChat(false); });
+
+    function addChatBubble(role, text, extraClass){
+      var emptyState = chatThread.querySelector('.empty-state');
+      if(emptyState) emptyState.remove();
+      var bubble = document.createElement('div');
+      bubble.className = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
+      bubble.textContent = text;
+      chatThread.appendChild(bubble);
+      chatThread.scrollTop = chatThread.scrollHeight;
+      return bubble;
+    }
+
+    chatInputForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var question = chatInput.value.trim();
+      if(!question) return;
+      addChatBubble('user', question);
+      chatInput.value = '';
+      var sendBtn = chatInputForm.querySelector('button[type="submit"]');
+      sendBtn.disabled = true;
+      var thinkingBubble = addChatBubble('assistant', 'Thinking…', 'thinking');
+
+      fetch(CONVEX_SITE_URL + '/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: question })
+      })
+        .then(function(res){ return res.json().then(function(body){ return { ok: res.ok, body: body }; }); })
+        .then(function(outcome){
+          sendBtn.disabled = false;
+          thinkingBubble.remove();
+          if(!outcome.ok){
+            addChatBubble('assistant', outcome.body.error || 'Something went wrong.', 'error');
+            return;
+          }
+          addChatBubble('assistant', outcome.body.answer);
+        })
+        .catch(function(){
+          sendBtn.disabled = false;
+          thinkingBubble.remove();
+          addChatBubble('assistant', "Couldn't reach the assistant — check your connection and try again.", 'error');
         });
     });
   })();

@@ -179,4 +179,111 @@ http.route({
   }),
 });
 
+http.route({
+  path: "/upload-url",
+  method: "POST",
+  handler: httpAction(async (ctx) => {
+    const uploadUrl = await ctx.storage.generateUploadUrl();
+    return new Response(JSON.stringify({ uploadUrl }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/upload-url",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/process-upload",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    const storageId = typeof body.storageId === "string" ? body.storageId : "";
+    const scheme = typeof body.scheme === "string" ? body.scheme.trim() : "";
+
+    if (!storageId || !scheme) {
+      return new Response(JSON.stringify({ error: "Missing storageId or scheme" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    try {
+      const result = await ctx.runAction(api.scanUpload.processUpload, {
+        storageId: storageId as Id<"_storage">,
+        scheme,
+      });
+      return new Response(JSON.stringify({ ok: true, result }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : String(err);
+      // Convex actions report errors as "Uncaught Error: <message>\n    at ...",
+      // strip that down to just the human-readable message for display.
+      const message = raw
+        .replace(/^Uncaught Error:\s*/, "")
+        .split("\n")[0]
+        .trim();
+      return new Response(JSON.stringify({ error: message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/process-upload",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/chat",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    const question = typeof body.question === "string" ? body.question.trim() : "";
+
+    if (!question) {
+      return new Response(JSON.stringify({ error: "Missing question" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    try {
+      const answer = await ctx.runAction(api.chat.askAssistant, { question });
+      return new Response(JSON.stringify({ ok: true, answer }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : String(err);
+      const message = raw.replace(/^Uncaught Error:\s*/, "").split("\n")[0].trim();
+      return new Response(JSON.stringify({ error: message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/chat",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
 export default http;

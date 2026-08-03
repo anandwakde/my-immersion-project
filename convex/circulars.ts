@@ -11,6 +11,7 @@ export const create = internalMutation({
     deadlineDate: v.optional(v.union(v.string(), v.null())),
     scope: v.string(),
     sourceUrl: v.string(),
+    fileHash: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const circularId = await ctx.db.insert("circulars", args);
@@ -44,5 +45,15 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("circulars").order("desc").take(50);
+  },
+});
+
+export const findByFileHash = query({
+  args: { fileHash: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("circulars")
+      .withIndex("by_file_hash", (q) => q.eq("fileHash", args.fileHash))
+      .unique();
   },
 });

@@ -16,7 +16,8 @@ export default defineSchema({
     deadlineDate: v.optional(v.union(v.string(), v.null())),
     scope: v.string(),
     sourceUrl: v.string(),
-  }),
+    fileHash: v.optional(v.string()),
+  }).index("by_file_hash", ["fileHash"]),
 
   tasks: defineTable({
     circularId: v.id("circulars"),

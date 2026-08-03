@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as chat from "../chat.js";
 import type * as circulars from "../circulars.js";
 import type * as crons from "../crons.js";
 import type * as digest from "../digest.js";
@@ -19,10 +20,12 @@ import type * as scanAmex from "../scanAmex.js";
 import type * as scanKnet from "../scanKnet.js";
 import type * as scanMada from "../scanMada.js";
 import type * as scanUnionPay from "../scanUnionPay.js";
+import type * as scanUpload from "../scanUpload.js";
 import type * as scanVisa from "../scanVisa.js";
 import type * as status from "../status.js";
 import type * as subscribers from "../subscribers.js";
 import type * as tasks from "../tasks.js";
+import type * as uploads from "../uploads.js";
 import type * as waitlist from "../waitlist.js";
 
 import type {
@@ -32,6 +35,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  chat: typeof chat;
   circulars: typeof circulars;
   crons: typeof crons;
   digest: typeof digest;
@@ -43,10 +47,12 @@ declare const fullApi: ApiFromModules<{
   scanKnet: typeof scanKnet;
   scanMada: typeof scanMada;
   scanUnionPay: typeof scanUnionPay;
+  scanUpload: typeof scanUpload;
   scanVisa: typeof scanVisa;
   status: typeof status;
   subscribers: typeof subscribers;
   tasks: typeof tasks;
+  uploads: typeof uploads;
   waitlist: typeof waitlist;
 }>;
 
