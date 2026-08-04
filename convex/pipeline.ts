@@ -8,6 +8,14 @@ export const runMastercardPipeline = action({
       api.scan.scanMastercard,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;
@@ -38,6 +46,14 @@ export const runMadaPipeline = action({
       api.scanMada.scanMada,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;
@@ -75,6 +91,14 @@ export const runVisaPipeline = action({
       api.scanVisa.scanVisa,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;
@@ -105,6 +129,14 @@ export const runAmexPipeline = action({
       api.scanAmex.scanAmex,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;
@@ -135,6 +167,14 @@ export const runUnionPayPipeline = action({
       api.scanUnionPay.scanUnionPay,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;
@@ -165,6 +205,14 @@ export const runKnetPipeline = action({
       api.scanKnet.scanKnet,
       {}
     );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
     const fields: {
       title: string;
       scheme: string;

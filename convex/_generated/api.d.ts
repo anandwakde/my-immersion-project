@@ -19,6 +19,8 @@ import type * as scan from "../scan.js";
 import type * as scanAmex from "../scanAmex.js";
 import type * as scanKnet from "../scanKnet.js";
 import type * as scanMada from "../scanMada.js";
+import type * as scanMastercardArchive from "../scanMastercardArchive.js";
+import type * as scanMastercardSend from "../scanMastercardSend.js";
 import type * as scanUnionPay from "../scanUnionPay.js";
 import type * as scanUpload from "../scanUpload.js";
 import type * as scanVisa from "../scanVisa.js";
@@ -46,6 +48,8 @@ declare const fullApi: ApiFromModules<{
   scanAmex: typeof scanAmex;
   scanKnet: typeof scanKnet;
   scanMada: typeof scanMada;
+  scanMastercardArchive: typeof scanMastercardArchive;
+  scanMastercardSend: typeof scanMastercardSend;
   scanUnionPay: typeof scanUnionPay;
   scanUpload: typeof scanUpload;
   scanVisa: typeof scanVisa;

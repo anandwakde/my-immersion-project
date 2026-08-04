@@ -17,7 +17,9 @@ export default defineSchema({
     scope: v.string(),
     sourceUrl: v.string(),
     fileHash: v.optional(v.string()),
-  }).index("by_file_hash", ["fileHash"]),
+  })
+    .index("by_file_hash", ["fileHash"])
+    .index("by_source_url", ["sourceUrl"]),
 
   tasks: defineTable({
     circularId: v.id("circulars"),

@@ -40,6 +40,7 @@
   }
 
   .hero{
+    position: relative;
     padding: var(--sp-6) var(--sp-6) 0 var(--sp-6);
     max-width: 1280px;
     margin: 0 auto;
@@ -402,6 +403,14 @@
   .calendar-day.has-items{ cursor: pointer; background: rgba(255,255,255,0.16); }
   .calendar-day.has-items:hover{ background: rgba(255,255,255,0.26); }
   .calendar-day.has-items .calendar-day-num{ color: #fff; font-weight: 700; }
+  .calendar-day.status-overdue{ background: rgba(232,86,76,0.35); }
+  .calendar-day.status-overdue:hover{ background: rgba(232,86,76,0.45); }
+  .calendar-day.status-due-soon{ background: rgba(245,185,63,0.35); }
+  .calendar-day.status-due-soon:hover{ background: rgba(245,185,63,0.45); }
+  .calendar-day.status-on-track{ background: rgba(52,195,143,0.3); }
+  .calendar-day.status-on-track:hover{ background: rgba(52,195,143,0.4); }
+  .calendar-day.status-informational{ background: rgba(52,195,143,0.3); }
+  .calendar-day.status-informational:hover{ background: rgba(52,195,143,0.4); }
   .calendar-day.today{ box-shadow: inset 0 0 0 2px var(--gold); }
   .calendar-day.selected{ background: var(--gold); }
   .calendar-day.selected .calendar-day-num{ color: var(--ink); }
@@ -565,11 +574,49 @@
     .chat-widget{ width: calc(100vw - 32px); right: 16px; bottom: 84px; height: 420px; }
     .chat-toggle{ right: 16px; bottom: 16px; }
   }
+
+  /* ---------- LIVE BADGE ---------- */
+  .live-badge{
+    position: absolute;
+    top: var(--sp-6);
+    right: var(--sp-6);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0,0,0,0.22);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 7px 13px;
+    border-radius: 999px;
+    cursor: default;
+  }
+  .live-dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--on-track);
+    animation: live-pulse 2s infinite;
+  }
+  @keyframes live-pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(52,195,143,0.6); }
+    70%{ box-shadow: 0 0 0 7px rgba(52,195,143,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(52,195,143,0); }
+  }
+
+  @media (max-width: 600px){
+    .live-badge{ position: static; margin-bottom: var(--sp-4); }
+  }
 </style>
 </head>
 <body>
 
   <header class="hero">
+    <div class="live-badge" title="Automatically re-scans every source every 24 hours">
+      <span class="live-dot"></span>
+      Live
+    </div>
     <h1 class="product-title">MEA PIM <span class="product-sub">(Payment Intelligence Monitor)</span></h1>
     <div class="main-tabs" id="main-tabs">
       <button type="button" class="main-tab active" data-tab="circulars">Circulars</button>
@@ -586,7 +633,8 @@
     <section class="tab-panel active" id="panel-circulars">
       <div class="filter-bar">
         <div class="filter-chips" id="status-filters">
-          <button type="button" class="filter-chip active" data-status="all">All</button>
+          <button type="button" class="filter-chip active" data-status="urgent">Urgent</button>
+          <button type="button" class="filter-chip" data-status="all">All</button>
           <button type="button" class="filter-chip" data-status="overdue">Overdue</button>
           <button type="button" class="filter-chip" data-status="due-soon">Due Soon</button>
           <button type="button" class="filter-chip" data-status="on-track">On Track</button>
@@ -771,12 +819,12 @@
     var schemeSelect = document.getElementById('scheme-filter');
 
     var allCirculars = [];
-    var currentStatus = 'all';
+    var currentStatus = 'urgent';
     var currentScheme = 'all';
 
     function renderCircularList(list){
       if(!list.length){
-        circularContainer.innerHTML = '<p class="empty-state">No circulars match this filter.</p>';
+        circularContainer.innerHTML = '<p class="empty-state">Nothing urgent right now — click “All” above to see everything.</p>';
         return;
       }
       circularContainer.innerHTML = list.map(renderCircular).join('');
@@ -784,7 +832,8 @@
 
     function applyFilters(){
       var filtered = allCirculars.filter(function(c){
-        var statusOk = currentStatus === 'all' || c.status === currentStatus;
+        var statusOk = currentStatus === 'all'
+          || (currentStatus === 'urgent' ? (c.status === 'overdue' || c.status === 'due-soon') : c.status === currentStatus);
         var schemeOk = currentScheme === 'all' || c.scheme === currentScheme;
         return statusOk && schemeOk;
       });
@@ -896,6 +945,21 @@
         : '<p class="empty-state">Nothing due this day.</p>';
     }
 
+    var CALENDAR_STATUS_SEVERITY = { 'overdue': 0, 'due-soon': 1, 'on-track': 2, 'informational': 2 };
+    function worstStatusFor(items){
+      var worst = null;
+      var worstSeverity = Infinity;
+      items.forEach(function(c){
+        var severity = CALENDAR_STATUS_SEVERITY[c.status];
+        if(severity === undefined) severity = 1;
+        if(severity < worstSeverity){
+          worstSeverity = severity;
+          worst = c.status;
+        }
+      });
+      return worst;
+    }
+
     function renderCalendar(){
       var year = currentCalMonth.getFullYear();
       var month = currentCalMonth.getMonth();
@@ -915,7 +979,7 @@
         var dateStr = ymd(year, month, day);
         var items = map[dateStr] || [];
         var classes = 'calendar-day';
-        if(items.length) classes += ' has-items';
+        if(items.length) classes += ' has-items status-' + worstStatusFor(items);
         if(dateStr === todayStr) classes += ' today';
         if(dateStr === selectedCalDate) classes += ' selected';
         var dots = items.slice(0, 4).map(function(c){
@@ -948,11 +1012,36 @@
       renderCalendar();
     });
 
+    function closestMarkedDate(map){
+      var dates = Object.keys(map);
+      if(!dates.length) return null;
+      var now = new Date();
+      var todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+      var todayMs = new Date(todayStr + 'T00:00:00').getTime();
+      dates.sort(function(a, b){
+        var diffA = Math.abs(new Date(a + 'T00:00:00').getTime() - todayMs);
+        var diffB = Math.abs(new Date(b + 'T00:00:00').getTime() - todayMs);
+        return diffA - diffB;
+      });
+      return dates[0];
+    }
+
     function initCalendar(){
       var now = new Date();
       var todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate());
       var map = circularsByDate();
-      selectedCalDate = map[todayStr] ? todayStr : null;
+
+      if(map[todayStr]){
+        selectedCalDate = todayStr;
+      } else {
+        var nearest = closestMarkedDate(map);
+        selectedCalDate = nearest;
+        if(nearest){
+          var nearestDate = new Date(nearest + 'T00:00:00');
+          currentCalMonth = new Date(nearestDate.getFullYear(), nearestDate.getMonth(), 1);
+        }
+      }
+
       renderCalendar();
       renderCalendarDetail(selectedCalDate);
     }

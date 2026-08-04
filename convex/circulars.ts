@@ -57,3 +57,13 @@ export const findByFileHash = query({
       .unique();
   },
 });
+
+export const findBySourceUrl = query({
+  args: { sourceUrl: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("circulars")
+      .withIndex("by_source_url", (q) => q.eq("sourceUrl", args.sourceUrl))
+      .unique();
+  },
+});

@@ -8,7 +8,21 @@
       "Bash(echo \"no test files found \\(exit $?\\)\")",
       "Bash(npx tsc *)",
       "Bash(npm run *)",
-      "Bash(echo \"EXIT CODE: $?\")"
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(open *)",
+      "WebFetch(domain:in.linkedin.com)",
+      "Bash(vercel domains *)",
+      "Bash(npm ls *)",
+      "Bash(python3 -c \"import cairosvg\")",
+      "Bash(python3 *)",
+      "Bash(pip3 install *)",
+      "Bash(vercel --prod --yes)",
+      "Bash(curl -s https://portfolio-pink-one-70.vercel.app/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 10 https://pim.anandwakde.com)",
+      "Bash(dig +short pim.anandwakde.com)",
+      "Bash(dig +short A anandwakde.com)",
+      "Bash(dig +short A www.anandwakde.com)",
+      "Bash(curl -sI --max-time 10 https://pim.anandwakde.com/)"
     ]
   }
 }
