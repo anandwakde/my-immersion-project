@@ -1,7 +1,7 @@
 "use node";
 
 import { action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { api } from "./_generated/api";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 // Real, publicly-hosted Mastercard Cross-Border Services bulletin PDFs,
@@ -66,7 +66,7 @@ export const scanArchive = action({
           scope: string;
         } = await ctx.runAction(api.extract.extractFields, { rawText });
 
-        await ctx.runMutation(internal.circulars.create, {
+        await ctx.runAction(api.ingest.ingestCircular, {
           scheme: fields.scheme,
           title: fields.title,
           urgency: fields.urgency,

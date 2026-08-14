@@ -27,3 +27,15 @@ export const list = query({
     return await ctx.db.query("subscribers").take(500);
   },
 });
+
+export const unsubscribe = mutation({
+  args: { subscriberId: v.id("subscribers") },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args.subscriberId);
+    if (!existing) {
+      return { alreadyGone: true };
+    }
+    await ctx.db.delete(args.subscriberId);
+    return { email: existing.email };
+  },
+});

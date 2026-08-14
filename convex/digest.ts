@@ -1,7 +1,9 @@
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 
-const DASHBOARD_URL = "https://mea-payment-intelligence-monitor.vercel.app/dashboard.html";
+const DASHBOARD_URL = "https://pim.anandwakde.com/";
+const CONVEX_SITE_URL = "https://calculating-ptarmigan-789.convex.site";
+const FROM_ADDRESS = "MEA Payment Intelligence Monitor <alerts@updates.pim.anandwakde.com>";
 
 function escapeHtml(str: string): string {
   return str
@@ -11,12 +13,14 @@ function escapeHtml(str: string): string {
 }
 
 function buildDigestHtml(
-  circulars: { scheme: string; title: string; urgency: string; deadline: string; sourceUrl: string }[]
+  circulars: { scheme: string; title: string; urgency: string; deadline: string; sourceUrl: string }[],
+  unsubscribeUrl: string
 ): string {
   const dashboardLink = `<p><a href="${DASHBOARD_URL}" style="color:#5B4BD6;font-weight:600;">Open the monitoring dashboard &rarr;</a></p>`;
+  const unsubscribeFooter = `<p style="margin-top:24px;padding-top:16px;border-top:1px solid #eee;font-size:12px;color:#999;"><a href="${unsubscribeUrl}" style="color:#999;">Unsubscribe</a> from these digest emails.</p>`;
 
   if (!circulars.length) {
-    return `<div style="font-family:sans-serif;color:#2B2350;"><h2>Your circular digest</h2><p>No circulars matched your subscription right now.</p>${dashboardLink}</div>`;
+    return `<div style="font-family:sans-serif;color:#2B2350;"><h2>Your circular digest</h2><p>No circulars matched your subscription right now.</p>${dashboardLink}${unsubscribeFooter}</div>`;
   }
 
   const rows = circulars
@@ -45,18 +49,23 @@ function buildDigestHtml(
         </thead>
         <tbody>${rows}</tbody>
       </table>
+      ${unsubscribeFooter}
     </div>`;
 }
 
 export const sendDigest = action({
   args: {},
   handler: async (ctx): Promise<unknown> => {
+    if (process.env.EMAIL_ALERTS_PAUSED === "true") {
+      return { paused: true };
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       throw new Error("RESEND_API_KEY is not set on this deployment");
     }
 
-    const subscribers: { email: string; schemes: string[] }[] = await ctx.runQuery(
+    const subscribers: { _id: string; email: string; schemes: string[] }[] = await ctx.runQuery(
       api.subscribers.list,
       {}
     );
@@ -68,6 +77,7 @@ export const sendDigest = action({
     for (const sub of subscribers) {
       const matching =
         sub.schemes.length === 0 ? circulars : circulars.filter((c) => sub.schemes.includes(c.scheme));
+      const unsubscribeUrl = `${CONVEX_SITE_URL}/unsubscribe?id=${sub._id}`;
 
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -76,10 +86,10 @@ export const sendDigest = action({
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          from: "MEA Payment Intelligence Monitor <onboarding@resend.dev>",
+          from: FROM_ADDRESS,
           to: sub.email,
           subject: `Your circular digest — ${matching.length} update${matching.length === 1 ? "" : "s"}`,
-          html: buildDigestHtml(matching),
+          html: buildDigestHtml(matching, unsubscribeUrl),
         }),
       });
 

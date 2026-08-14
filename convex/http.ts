@@ -10,6 +10,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+// Convex wraps thrown errors as "Uncaught Error: <message>\n    at handler (...)",
+// and each nested ctx.runAction boundary the error crosses adds another
+// "Uncaught Error:" prefix. Strip all of those repeated prefixes and only the
+// stack-trace lines (lines starting with whitespace + "at ") — a naive
+// split("\n")[0] would also truncate legitimate multi-line error content,
+// like OpenAI's pretty-printed JSON error bodies, which is a real bug this
+// replaced (an upload error showed only "429 {" with everything after the
+// first line of the JSON silently cut off).
+function cleanErrorMessage(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  return raw
+    .replace(/^(Uncaught Error:\s*)+/, "")
+    .split("\n")
+    .filter((line) => !/^\s*at\s/.test(line))
+    .join("\n")
+    .trim();
+}
+
 const http = httpRouter();
 
 http.route({
@@ -224,13 +242,7 @@ http.route({
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     } catch (err) {
-      const raw = err instanceof Error ? err.message : String(err);
-      // Convex actions report errors as "Uncaught Error: <message>\n    at ...",
-      // strip that down to just the human-readable message for display.
-      const message = raw
-        .replace(/^Uncaught Error:\s*/, "")
-        .split("\n")[0]
-        .trim();
+      const message = cleanErrorMessage(err);
       return new Response(JSON.stringify({ error: message }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -268,8 +280,7 @@ http.route({
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     } catch (err) {
-      const raw = err instanceof Error ? err.message : String(err);
-      const message = raw.replace(/^Uncaught Error:\s*/, "").split("\n")[0].trim();
+      const message = cleanErrorMessage(err);
       return new Response(JSON.stringify({ error: message }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -283,6 +294,39 @@ http.route({
   method: "OPTIONS",
   handler: httpAction(async () => {
     return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+function unsubscribePage(message: string): Response {
+  return new Response(
+    `<!doctype html><html><head><meta charset="UTF-8" /><title>Unsubscribed</title>
+    <style>body{font-family:sans-serif;color:#2B2350;max-width:480px;margin:80px auto;text-align:center;padding:0 20px;}</style>
+    </head><body><h2>${message}</h2></body></html>`,
+    { status: 200, headers: { "Content-Type": "text/html", ...corsHeaders } }
+  );
+}
+
+http.route({
+  path: "/unsubscribe",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+    if (!id) {
+      return unsubscribePage("Missing unsubscribe link — nothing to do.");
+    }
+
+    try {
+      const result = await ctx.runMutation(api.subscribers.unsubscribe, {
+        subscriberId: id as Id<"subscribers">,
+      });
+      if ("alreadyGone" in result) {
+        return unsubscribePage("You're already unsubscribed.");
+      }
+      return unsubscribePage(`Unsubscribed ${result.email} — you won't get any more digest emails.`);
+    } catch {
+      return unsubscribePage("Couldn't process that unsubscribe link.");
+    }
   }),
 });
 

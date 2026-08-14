@@ -9,11 +9,13 @@
  */
 
 import type * as chat from "../chat.js";
+import type * as circularAlert from "../circularAlert.js";
 import type * as circulars from "../circulars.js";
 import type * as crons from "../crons.js";
 import type * as digest from "../digest.js";
 import type * as extract from "../extract.js";
 import type * as http from "../http.js";
+import type * as ingest from "../ingest.js";
 import type * as pipeline from "../pipeline.js";
 import type * as scan from "../scan.js";
 import type * as scanAmex from "../scanAmex.js";
@@ -24,6 +26,7 @@ import type * as scanMastercardSend from "../scanMastercardSend.js";
 import type * as scanUnionPay from "../scanUnionPay.js";
 import type * as scanUpload from "../scanUpload.js";
 import type * as scanVisa from "../scanVisa.js";
+import type * as scanVisaDecta from "../scanVisaDecta.js";
 import type * as status from "../status.js";
 import type * as subscribers from "../subscribers.js";
 import type * as tasks from "../tasks.js";
@@ -38,11 +41,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
+  circularAlert: typeof circularAlert;
   circulars: typeof circulars;
   crons: typeof crons;
   digest: typeof digest;
   extract: typeof extract;
   http: typeof http;
+  ingest: typeof ingest;
   pipeline: typeof pipeline;
   scan: typeof scan;
   scanAmex: typeof scanAmex;
@@ -53,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   scanUnionPay: typeof scanUnionPay;
   scanUpload: typeof scanUpload;
   scanVisa: typeof scanVisa;
+  scanVisaDecta: typeof scanVisaDecta;
   status: typeof status;
   subscribers: typeof subscribers;
   tasks: typeof tasks;

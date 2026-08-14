@@ -1,5 +1,5 @@
 import { action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { api } from "./_generated/api";
 
 export const runMastercardPipeline = action({
   args: {},
@@ -25,7 +25,7 @@ export const runMastercardPipeline = action({
       scope: string;
     } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
 
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: fields.scheme,
       title: fields.title,
       urgency: fields.urgency,
@@ -70,7 +70,7 @@ export const runMadaPipeline = action({
     // pipeline's whole purpose is the Mada feed, and the circular is
     // substantively about Mada's own compliance/technical requirements,
     // override to "Mada" here rather than trust the generic extraction.
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: "Mada",
       title: fields.title,
       urgency: fields.urgency,
@@ -108,7 +108,7 @@ export const runVisaPipeline = action({
       scope: string;
     } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
 
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: "Visa",
       title: fields.title,
       urgency: fields.urgency,
@@ -146,7 +146,7 @@ export const runAmexPipeline = action({
       scope: string;
     } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
 
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: "American Express",
       title: fields.title,
       urgency: fields.urgency,
@@ -184,7 +184,7 @@ export const runUnionPayPipeline = action({
       scope: string;
     } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
 
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: "UnionPay",
       title: fields.title,
       urgency: fields.urgency,
@@ -227,7 +227,7 @@ export const runKnetPipeline = action({
     // the circular is substantively about linking to KNET's "Instant
     // Payment" service, so override to "KNET" rather than trust the
     // generic extraction, same reasoning as the Mada pipeline above.
-    await ctx.runMutation(internal.circulars.create, {
+    await ctx.runAction(api.ingest.ingestCircular, {
       scheme: "KNET",
       title: fields.title,
       urgency: fields.urgency,

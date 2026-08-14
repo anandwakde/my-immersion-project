@@ -51,4 +51,16 @@ crons.interval(
   {}
 );
 
+// Visa's own GTLIG is gated behind Visa Online with no public URL — this
+// re-checks a fixed list of DECTA's real third-party release-notes PDFs
+// that summarize it. Dedups by source URL, so like the Mastercard archive
+// scanner, this only picks up a new release once its URL is added to the
+// hardcoded list in scanVisaDecta.ts.
+crons.interval(
+  "scan visa decta third-party summaries",
+  { hours: 24 },
+  api.scanVisaDecta.scanVisaDecta,
+  {}
+);
+
 export default crons;

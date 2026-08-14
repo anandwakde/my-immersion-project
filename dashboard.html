@@ -142,6 +142,11 @@
     padding: 6px 12px;
   }
   .scheme-check input{ accent-color: var(--gold); }
+  .scheme-check-all{
+    background: rgba(245,185,63,0.18);
+    font-weight: 600;
+    border: 1px solid rgba(245,185,63,0.4);
+  }
 
   .subscribe-form{ display: flex; gap: var(--sp-3); max-width: 420px; }
   .subscribe-form input[type="email"]{
@@ -854,9 +859,24 @@
       });
 
       var schemesContainer = document.getElementById('subscribe-schemes');
-      schemesContainer.innerHTML = schemes.map(function(scheme){
-        return '<label class="scheme-check"><input type="checkbox" value="' + escapeHtml(scheme) + '" /> ' + escapeHtml(scheme) + '</label>';
+      var selectAllHtml = '<label class="scheme-check scheme-check-all"><input type="checkbox" id="subscribe-select-all" /> Select All</label>';
+      var schemeChecksHtml = schemes.map(function(scheme){
+        return '<label class="scheme-check"><input type="checkbox" class="subscribe-scheme-check" value="' + escapeHtml(scheme) + '" /> ' + escapeHtml(scheme) + '</label>';
       }).join('');
+      schemesContainer.innerHTML = selectAllHtml + schemeChecksHtml;
+
+      var selectAllCheckbox = document.getElementById('subscribe-select-all');
+      var schemeCheckboxes = Array.from(document.querySelectorAll('.subscribe-scheme-check'));
+
+      selectAllCheckbox.addEventListener('change', function(){
+        schemeCheckboxes.forEach(function(cb){ cb.checked = selectAllCheckbox.checked; });
+      });
+
+      schemeCheckboxes.forEach(function(cb){
+        cb.addEventListener('change', function(){
+          selectAllCheckbox.checked = schemeCheckboxes.every(function(c){ return c.checked; });
+        });
+      });
 
       var uploadSchemeSelect = document.getElementById('upload-scheme');
       var uploadOtherOption = uploadSchemeSelect.querySelector('option[value="__other__"]');
@@ -1206,7 +1226,8 @@
           }
           var r = outcome.body.result;
           uploadStatus.className = 'upload-status success';
-          uploadStatus.textContent = 'Added: ' + r.title + ' (' + r.scheme + '). Check the Circulars tab to see it with its full status.';
+          uploadStatus.textContent = 'Added: ' + r.title + ' (' + r.scheme + '). Check the Circulars tab to see it with its full status.' +
+            (r.truncated ? ' Note: this PDF was very large, so only the first part of it was analyzed — double check the extracted details against the source.' : '');
           uploadForm.reset();
           toggleUploadSchemeOther();
           return fetch(CONVEX_SITE_URL + '/circulars')
@@ -1229,7 +1250,13 @@
     subscribeForm.addEventListener('submit', function(e){
       e.preventDefault();
       var emailInput = document.getElementById('subscribe-email');
-      var checked = Array.from(document.querySelectorAll('#subscribe-schemes input:checked')).map(function(el){ return el.value; });
+      var selectAllChecked = document.getElementById('subscribe-select-all').checked;
+      // "Select All" submits an empty array (the backend's "no filter" convention),
+      // not the literal current scheme list, so subscribers automatically get any
+      // scheme added later too — not just the ones that existed when they signed up.
+      var checked = selectAllChecked
+        ? []
+        : Array.from(document.querySelectorAll('.subscribe-scheme-check:checked')).map(function(el){ return el.value; });
       var btn = subscribeForm.querySelector('button[type="submit"]');
       var originalLabel = btn.textContent;
       btn.disabled = true;

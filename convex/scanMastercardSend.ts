@@ -1,7 +1,7 @@
 "use node";
 
 import { action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { api } from "./_generated/api";
 import ExcelJS from "exceljs";
 
 // Unlike every other scanner, this is a real, public, monthly-updated
@@ -90,7 +90,7 @@ export const scanSendAnnouncements = action({
         const region = String(row.getCell(1).value ?? "Global").trim();
         const actionIndicator = String(row.getCell(9).value ?? "").trim();
 
-        await ctx.runMutation(internal.circulars.create, {
+        await ctx.runAction(api.ingest.ingestCircular, {
           scheme: "Mastercard",
           title,
           urgency: normalizeUrgency(actionIndicator),
