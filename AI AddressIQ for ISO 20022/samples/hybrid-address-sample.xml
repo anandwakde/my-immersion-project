@@ -1,0 +1,23 @@
+<!--
+  HYBRID address example.
+  Town Name and Country are structured; everything else (building, floor,
+  landmark) is folded into up to two free-text AdrLine elements (70 chars
+  max each). This is the November 2025 transition format allowed alongside
+  fully structured addresses ahead of the November 2026 CBPR+ deadline.
+  Copy just the <PstlAdr>...</PstlAdr> block below into AddressIQ to test it.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <CdtTrfTxInf>
+      <Cdtr>
+        <Nm>JOHN SMITH</Nm>
+        <PstlAdr>
+          <TwnNm>Brussels</TwnNm>
+          <Ctry>BE</Ctry>
+          <AdrLine>Hoogstraat 6, Premium Tower</AdrLine>
+          <AdrLine>18th Floor, 1000</AdrLine>
+        </PstlAdr>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

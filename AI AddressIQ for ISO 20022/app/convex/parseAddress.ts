@@ -4,6 +4,16 @@ import { v, ConvexError } from "convex/values";
 const READY_CONFIDENCE_THRESHOLD = 75;
 const MAX_INPUT_LENGTH = 1000;
 
+const FIELD_KEYS = [
+  "floorUnit",
+  "buildingNumber",
+  "streetName",
+  "townName",
+  "postalCode",
+  "countryCode",
+  "countryName",
+] as const;
+
 export const parse = action({
   args: { rawAddress: v.string() },
   returns: v.object({
@@ -17,6 +27,12 @@ export const parse = action({
     confidence: v.number(),
     missingRequiredFields: v.array(v.string()),
     status: v.union(v.literal("ready"), v.literal("needs_review")),
+    addressFormat: v.union(
+      v.literal("structured"),
+      v.literal("hybrid"),
+      v.literal("unstructured"),
+    ),
+    fieldIssues: v.record(v.string(), v.string()),
   }),
   handler: async (_ctx, args) => {
     const rawAddress = args.rawAddress.trim();
@@ -45,8 +61,21 @@ export const parse = action({
         messages: [
           {
             role: "system",
-            content:
-              "You convert a raw, possibly hybrid or unstructured payment beneficiary address into ISO 20022 structured address fields. Respond with ONLY a JSON object with these exact keys: floorUnit, buildingNumber, streetName, townName, postalCode, countryCode (ISO 3166-1 alpha-2), countryName, confidence (an integer 0-100, your own honest estimate of how confident you are in this structuring). Use null for any field you cannot determine from the input. Do not invent data that is not present or clearly implied in the input.",
+            content: `You analyze a raw payment beneficiary address for ISO 20022 CBPR+ readiness.
+
+First classify the RAW INPUT's address format as exactly one of:
+- "structured": every component already arrives as its own clearly separated field (street, building number, town, postal code, country all distinct).
+- "hybrid": Town Name and Country are clearly identifiable on their own, but the rest (building, floor, street, landmarks) is combined into one or two free-text lines.
+- "unstructured": the whole address is one free-text blob with no clearly separable components at all.
+
+Then extract these ISO 20022 fields: floorUnit, buildingNumber, streetName, townName, postalCode, countryCode (ISO 3166-1 alpha-2), countryName.
+For each field, give your best real value if you can determine or reasonably infer it from context — do not leave a field null when a reasonable inference is possible from the text. Only use null when the input truly gives no basis to infer that field.
+
+Also return "fieldIssues": an object whose keys are ONLY the field names above that have a problem (missing, ambiguous, or inferred rather than explicit), each mapped to a short (under 15 words) explanation of the problem and what would resolve it. Omit keys for fields with no issue.
+
+Also return "confidence": an integer 0-100, your honest confidence in the overall structuring.
+
+Respond with ONLY a JSON object with keys: addressFormat, floorUnit, buildingNumber, streetName, townName, postalCode, countryCode, countryName, confidence, fieldIssues.`,
           },
           { role: "user", content: rawAddress },
         ],
@@ -89,20 +118,32 @@ export const parse = action({
       confidence: num(obj.confidence),
     };
 
-    const nothingExtracted = [
-      structured.floorUnit,
-      structured.buildingNumber,
-      structured.streetName,
-      structured.townName,
-      structured.postalCode,
-      structured.countryCode,
-      structured.countryName,
-    ].every((field) => field === null);
+    const nothingExtracted = FIELD_KEYS.every(
+      (key) => structured[key] === null,
+    );
     if (nothingExtracted) {
       throw new ConvexError(
         "Couldn't find an address in that text — check what you pasted.",
       );
     }
+
+    const rawFieldIssues =
+      obj.fieldIssues && typeof obj.fieldIssues === "object"
+        ? (obj.fieldIssues as Record<string, unknown>)
+        : {};
+    const fieldIssues: Record<string, string> = {};
+    for (const key of FIELD_KEYS) {
+      const issue = rawFieldIssues[key];
+      if (typeof issue === "string" && issue.trim()) {
+        fieldIssues[key] = issue.trim();
+      }
+    }
+
+    const addressFormatRaw = str(obj.addressFormat);
+    const addressFormat: "structured" | "hybrid" | "unstructured" =
+      addressFormatRaw === "structured" || addressFormatRaw === "hybrid"
+        ? addressFormatRaw
+        : "unstructured";
 
     const requiredFields: { key: keyof typeof structured; label: string }[] = [
       { key: "streetName", label: "Street Name" },
@@ -115,10 +156,17 @@ export const parse = action({
 
     const status: "ready" | "needs_review" =
       missingRequiredFields.length > 0 ||
+      Object.keys(fieldIssues).length > 0 ||
       structured.confidence < READY_CONFIDENCE_THRESHOLD
         ? "needs_review"
         : "ready";
 
-    return { ...structured, missingRequiredFields, status };
+    return {
+      ...structured,
+      missingRequiredFields,
+      status,
+      addressFormat,
+      fieldIssues,
+    };
   },
 });

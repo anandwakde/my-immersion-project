@@ -1,0 +1,23 @@
+<!--
+  STRUCTURED address example.
+  Every address component sits in its own tag — no free-text AdrLine at all.
+  This is the fully compliant target format for ISO 20022 CBPR+.
+  Copy just the <PstlAdr>...</PstlAdr> block below into AddressIQ to test it.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <CdtTrfTxInf>
+      <Cdtr>
+        <Nm>JOHN SMITH</Nm>
+        <PstlAdr>
+          <StrtNm>Hoogstraat</StrtNm>
+          <BldgNb>6</BldgNb>
+          <Flr>18</Flr>
+          <PstCd>1000</PstCd>
+          <TwnNm>Brussels</TwnNm>
+          <Ctry>BE</Ctry>
+        </PstlAdr>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

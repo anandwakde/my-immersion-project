@@ -10,6 +10,7 @@
 
 import type * as addressChecks from "../addressChecks.js";
 import type * as parseAddress from "../parseAddress.js";
+import type * as samples from "../samples.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   addressChecks: typeof addressChecks;
   parseAddress: typeof parseAddress;
+  samples: typeof samples;
 }>;
 
 /**

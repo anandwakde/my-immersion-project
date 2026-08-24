@@ -19,6 +19,24 @@ export default defineSchema({
     confidence: v.number(),
     missingRequiredFields: v.array(v.string()),
     status: v.union(v.literal("ready"), v.literal("needs_review")),
+    addressFormat: v.union(
+      v.literal("structured"),
+      v.literal("hybrid"),
+      v.literal("unstructured"),
+    ),
+    fieldIssues: v.record(v.string(), v.string()),
     reviewed: v.boolean(),
   }),
+
+  sampleAddresses: defineTable({
+    category: v.union(
+      v.literal("structured"),
+      v.literal("hybrid"),
+      v.literal("unstructured"),
+    ),
+    label: v.string(),
+    text: v.string(),
+    source: v.string(),
+    order: v.number(),
+  }).index("by_category_and_order", ["category", "order"]),
 });

@@ -1,0 +1,21 @@
+<!--
+  UNSTRUCTURED address example.
+  Only Country is a distinct tag — town, street, everything else lives
+  inside free-text AdrLine elements. SWIFT is removing this format from
+  CBPR+ cross-border payments starting November 2026 (Standard Release 2026).
+  Copy just the <PstlAdr>...</PstlAdr> block below into AddressIQ to test it.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <CdtTrfTxInf>
+      <Cdtr>
+        <Nm>JOHN SMITH</Nm>
+        <PstlAdr>
+          <Ctry>BE</Ctry>
+          <AdrLine>Hoogstraat 6, Premium Tower</AdrLine>
+          <AdrLine>18th Floor, 1000 Brussels</AdrLine>
+        </PstlAdr>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

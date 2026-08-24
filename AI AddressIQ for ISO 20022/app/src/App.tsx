@@ -3,8 +3,9 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import "./addressiq.css";
+
+type AddressFormat = "structured" | "hybrid" | "unstructured";
 
 type ParsedAddress = {
   floorUnit: string | null;
@@ -17,6 +18,8 @@ type ParsedAddress = {
   confidence: number;
   missingRequiredFields: string[];
   status: "ready" | "needs_review";
+  addressFormat: AddressFormat;
+  fieldIssues: Record<string, string>;
 };
 
 type EditableFields = {
@@ -36,6 +39,12 @@ const REQUIRED_KEYS: (keyof EditableFields)[] = [
   "townName",
   "countryCode",
 ];
+
+const FORMAT_LABEL: Record<AddressFormat, string> = {
+  structured: "Structured",
+  hybrid: "Hybrid",
+  unstructured: "Unstructured",
+};
 
 function toEditableFields(result: ParsedAddress): EditableFields {
   return {
@@ -60,6 +69,31 @@ function missingFrom(fields: EditableFields): string[] {
   );
 }
 
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function buildPstlAdrXml(fields: EditableFields): string {
+  const lines: string[] = [];
+  const tag = (name: string, value: string) => {
+    if (value.trim()) lines.push(`  <${name}>${escapeXml(value.trim())}</${name}>`);
+  };
+  tag("StrtNm", fields.streetName);
+  tag("BldgNb", fields.buildingNumber);
+  tag("Flr", fields.floorUnit);
+  tag("PstCd", fields.postalCode);
+  tag("TwnNm", fields.townName);
+  tag("Ctry", fields.countryCode);
+  return ["<PstlAdr>", ...lines, "</PstlAdr>"].join("\n");
+}
+
+const SAMPLE_CATEGORIES: AddressFormat[] = ["structured", "hybrid", "unstructured"];
+
 export default function App() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<ParsedAddress | null>(null);
@@ -70,10 +104,14 @@ export default function App() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [copiedId, setCopiedId] = useState<Id<"sampleAddresses"> | null>(
+    null,
+  );
   const parseAddress = useAction(api.parseAddress.parse);
   const saveResult = useMutation(api.addressChecks.save);
   const markReviewed = useMutation(api.addressChecks.markReviewed);
   const latestCheck = useQuery(api.addressChecks.latest);
+  const samples = useQuery(api.samples.list);
 
   useEffect(() => {
     if (hydrated || latestCheck === undefined) return;
@@ -85,6 +123,8 @@ export default function App() {
         confidence: latestCheck.confidence,
         missingRequiredFields: latestCheck.missingRequiredFields,
         status: latestCheck.status,
+        addressFormat: latestCheck.addressFormat,
+        fieldIssues: latestCheck.fieldIssues,
       });
       setFields({
         floorUnit: latestCheck.finalFields.floorUnit ?? "",
@@ -122,6 +162,8 @@ export default function App() {
           confidence: parsed.confidence,
           missingRequiredFields: parsed.missingRequiredFields,
           status: parsed.status,
+          addressFormat: parsed.addressFormat,
+          fieldIssues: parsed.fieldIssues,
         });
         setRecordId(id);
       } catch {
@@ -154,27 +196,49 @@ export default function App() {
     setFields((prev) => (prev ? { ...prev, [key]: value } : prev));
   }
 
+  async function handleCopySample(id: Id<"sampleAddresses">, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
+    } catch {
+      // Clipboard API can be unavailable (e.g. insecure context); no fallback needed for this internal tool.
+    }
+  }
+
+  function handleDownloadXml() {
+    if (!fields) return;
+    const xml = buildPstlAdrXml(fields);
+    const blob = new Blob([xml], { type: "application/xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `structured-address-${fields.countryCode || "address"}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const isEditable = result?.status === "needs_review" && !reviewed && fields;
   const liveMissing = fields ? missingFrom(fields) : [];
   const isTooLong = input.length > MAX_INPUT_LENGTH;
+  const issues = result?.fieldIssues ?? {};
+  const showXmlOutput = Boolean(fields) && (reviewed || result?.status === "ready");
 
   return (
     <div className="aiq-page">
       <div className="aiq-container">
-        <div className="aiq-topbar">
-          <ThemeToggle />
-        </div>
-
         <p className="aiq-eyebrow">AddressIQ &middot; ISO 20022</p>
         <h1 className="aiq-h1">Paste an address, get it structured.</h1>
         <p className="aiq-subtitle">
           Paste a hybrid or unstructured payment address below. A real AI
-          call structures it into ISO 20022 fields.
+          call structures it into ISO 20022 fields, flags what's uncertain,
+          and suggests a fix.
         </p>
-        <p className="aiq-scope-note">
-          Milestone 10 &mdash; V1 complete. Close this tab and reopen it: your
-          last result is still here.
-        </p>
+
+        <div className="aiq-layout">
+        <div className="aiq-main">
 
         <div className="aiq-card">
           <p className="aiq-pane-label">Original</p>
@@ -227,12 +291,23 @@ export default function App() {
                 </span>
                 <span className="aiq-confidence-caption">confidence</span>
               </span>
+              <span className="aiq-pill aiq-pill-neutral">
+                Input: {FORMAT_LABEL[result.addressFormat]}
+              </span>
               {!reviewed && liveMissing.length > 0 && (
                 <span className="aiq-pill aiq-pill-warn">
                   Missing: {liveMissing.join(", ")}
                 </span>
               )}
             </div>
+            {result.addressFormat === "unstructured" && (
+              <p className="aiq-note">
+                Unstructured addresses are being phased out of ISO 20022
+                CBPR+ cross-border payments — SWIFT stops accepting them from
+                November 2026. Structured or hybrid (Town Name + Country in
+                their own fields) will be required.
+              </p>
+            )}
             {saveError && <p className="aiq-inline-warning">{saveError}</p>}
 
             {isEditable ? (
@@ -241,31 +316,37 @@ export default function App() {
                   <FieldInput
                     label="Floor / Unit"
                     value={fields.floorUnit}
+                    issue={issues.floorUnit}
                     onChange={(v) => updateField("floorUnit", v)}
                   />
                   <FieldInput
                     label="Building Number"
                     value={fields.buildingNumber}
+                    issue={issues.buildingNumber}
                     onChange={(v) => updateField("buildingNumber", v)}
                   />
                   <FieldInput
                     label="Street Name"
                     value={fields.streetName}
+                    issue={issues.streetName}
                     onChange={(v) => updateField("streetName", v)}
                   />
                   <FieldInput
                     label="Town Name"
                     value={fields.townName}
+                    issue={issues.townName}
                     onChange={(v) => updateField("townName", v)}
                   />
                   <FieldInput
                     label="Postal Code"
                     value={fields.postalCode}
+                    issue={issues.postalCode}
                     onChange={(v) => updateField("postalCode", v)}
                   />
                   <FieldInput
                     label="Country Code"
                     value={fields.countryCode}
+                    issue={issues.countryCode}
                     onChange={(v) => updateField("countryCode", v)}
                   />
                 </div>
@@ -299,8 +380,57 @@ export default function App() {
                 />
               </div>
             )}
+
+            {showXmlOutput && fields && (
+              <div className="aiq-xml-section">
+                <p className="aiq-pane-label">Structured ISO 20022 output</p>
+                <pre className="aiq-xml-output">
+                  {buildPstlAdrXml(fields)}
+                </pre>
+                <div className="aiq-form-footer">
+                  <button
+                    type="button"
+                    className="aiq-button-secondary"
+                    onClick={handleDownloadXml}
+                  >
+                    Download .xml
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
+
+        </div>
+
+        <aside className="aiq-sidebar">
+          <div className="aiq-card aiq-samples-card">
+            <p className="aiq-pane-label">Samples</p>
+            {SAMPLE_CATEGORIES.map((category) => (
+              <div key={category} className="aiq-sample-group">
+                <p className="aiq-sample-group-label">
+                  {FORMAT_LABEL[category]}
+                </p>
+                {(samples ?? [])
+                  .filter((s) => s.category === category)
+                  .map((sample) => (
+                    <div key={sample._id} className="aiq-sample-row">
+                      <span className="aiq-sample-label">{sample.label}</span>
+                      <button
+                        type="button"
+                        className="aiq-copy-btn"
+                        onClick={() => handleCopySample(sample._id, sample.text)}
+                      >
+                        {copiedId === sample._id ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        </div>
       </div>
     </div>
   );
@@ -318,10 +448,12 @@ function Field({ label, value }: { label: string; value: string | null }) {
 function FieldInput({
   label,
   value,
+  issue,
   onChange,
 }: {
   label: string;
   value: string;
+  issue?: string;
   onChange: (value: string) => void;
 }) {
   return (
@@ -333,6 +465,7 @@ function FieldInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
+      {issue && <p className="aiq-field-issue">{issue}</p>}
     </div>
   );
 }

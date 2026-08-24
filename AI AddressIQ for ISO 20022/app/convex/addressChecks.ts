@@ -9,6 +9,12 @@ export const save = mutation({
     confidence: v.number(),
     missingRequiredFields: v.array(v.string()),
     status: v.union(v.literal("ready"), v.literal("needs_review")),
+    addressFormat: v.union(
+      v.literal("structured"),
+      v.literal("hybrid"),
+      v.literal("unstructured"),
+    ),
+    fieldIssues: v.record(v.string(), v.string()),
   },
   returns: v.id("addressChecks"),
   handler: async (ctx, args) => {
@@ -19,6 +25,8 @@ export const save = mutation({
       confidence: args.confidence,
       missingRequiredFields: args.missingRequiredFields,
       status: args.status,
+      addressFormat: args.addressFormat,
+      fieldIssues: args.fieldIssues,
       reviewed: false,
     });
   },
