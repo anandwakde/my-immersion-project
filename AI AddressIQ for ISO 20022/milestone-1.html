@@ -1,0 +1,326 @@
+<style>
+  :root {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-recessed: #F0F1F5;
+    --border: #DFE2E9;
+    --ink: #171A23;
+    --ink-muted: #5B6072;
+    --ink-faint: #8B90A0;
+    --accent: #3B3FA8;
+    --accent-soft: #ECEDFA;
+    --good: #1E8E5A;
+    --good-soft: #E5F5EC;
+    --shadow: 0 1px 2px rgba(23,26,35,0.04), 0 8px 24px rgba(23,26,35,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D0F14;
+      --surface: #171A22;
+      --surface-recessed: #12141B;
+      --border: #2A2E3A;
+      --ink: #E7E9F0;
+      --ink-muted: #9096A8;
+      --ink-faint: #676D80;
+      --accent: #9296EE;
+      --accent-soft: #23264A;
+      --good: #4ADE94;
+      --good-soft: #14251C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0D0F14;
+    --surface: #171A22;
+    --surface-recessed: #12141B;
+    --border: #2A2E3A;
+    --ink: #E7E9F0;
+    --ink-muted: #9096A8;
+    --ink-faint: #676D80;
+    --accent: #9296EE;
+    --accent-soft: #23264A;
+    --good: #4ADE94;
+    --good-soft: #14251C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-recessed: #F0F1F5;
+    --border: #DFE2E9;
+    --ink: #171A23;
+    --ink-muted: #5B6072;
+    --ink-faint: #8B90A0;
+    --accent: #3B3FA8;
+    --accent-soft: #ECEDFA;
+    --good: #1E8E5A;
+    --good-soft: #E5F5EC;
+    --shadow: 0 1px 2px rgba(23,26,35,0.04), 0 8px 24px rgba(23,26,35,0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    color: var(--ink-muted);
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 46ch;
+    margin: 0 0 4px;
+  }
+
+  .scope-note {
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin: 0 0 40px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .transform {
+    display: grid;
+    grid-template-columns: 1fr auto 1.15fr;
+    align-items: stretch;
+  }
+
+  @media (max-width: 640px) {
+    .transform { grid-template-columns: 1fr; }
+    .arrow { display: none; }
+  }
+
+  .pane {
+    padding: 28px;
+  }
+
+  .pane-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px;
+  }
+
+  .original {
+    background: var(--surface-recessed);
+  }
+
+  .raw-text {
+    font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-muted);
+    border-left: 2px dashed var(--border);
+    padding-left: 14px;
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    color: var(--accent);
+    font-size: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .pane.original { border-bottom: 1px solid var(--border); }
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px 5px 9px;
+    border-radius: 999px;
+    background: var(--good-soft);
+    color: var(--good);
+  }
+
+  .pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--good);
+  }
+
+  .confidence {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  }
+
+  .confidence-value {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  .confidence-caption {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .meter {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--surface-recessed);
+    overflow: hidden;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: var(--good);
+    animation: fill 900ms cubic-bezier(0.22, 1, 0.36, 1) 200ms forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .meter-fill { animation: none; width: 88%; }
+  }
+
+  @keyframes fill {
+    to { width: 88%; }
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+
+  @media (max-width: 420px) {
+    .fields { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 4px;
+  }
+
+  .field-value {
+    font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">AddressIQ &middot; ISO 20022</p>
+  <h1>One address, structured.</h1>
+  <p class="subtitle">Paste a hybrid or unstructured payment address and get a structured ISO&nbsp;20022 result, with a confidence score and a status.</p>
+  <p class="scope-note">Milestone 1 &mdash; one hardcoded example, shown to prove the layout. Live parsing comes in the next build.</p>
+
+  <div class="card">
+    <div class="transform">
+      <div class="pane original">
+        <p class="pane-label">Original</p>
+        <p class="raw-text">Flat 12, 123 MG Road,<br>Near City Mall,<br>Mumbai 400058<br>India</p>
+      </div>
+
+      <div class="arrow" aria-hidden="true">&#8594;</div>
+
+      <div class="pane structured">
+        <p class="pane-label">Structured &middot; ISO 20022</p>
+
+        <div class="status-row">
+          <span class="pill">Ready for approval</span>
+          <span class="confidence">
+            <span class="confidence-value">88%</span>
+            <span class="confidence-caption">confidence</span>
+          </span>
+        </div>
+
+        <div class="meter"><div class="meter-fill"></div></div>
+
+        <div class="fields">
+          <div>
+            <p class="field-label">Floor / Unit</p>
+            <p class="field-value">Flat 12</p>
+          </div>
+          <div>
+            <p class="field-label">Building Number</p>
+            <p class="field-value">123</p>
+          </div>
+          <div>
+            <p class="field-label">Street Name</p>
+            <p class="field-value">MG Road</p>
+          </div>
+          <div>
+            <p class="field-label">Town Name</p>
+            <p class="field-value">Mumbai</p>
+          </div>
+          <div>
+            <p class="field-label">Postal Code</p>
+            <p class="field-value">400058</p>
+          </div>
+          <div>
+            <p class="field-label">Country</p>
+            <p class="field-value">IN &middot; India</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

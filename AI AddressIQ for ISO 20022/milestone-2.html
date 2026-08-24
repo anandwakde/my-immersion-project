@@ -1,0 +1,280 @@
+<style>
+  :root {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-recessed: #F0F1F5;
+    --border: #DFE2E9;
+    --ink: #171A23;
+    --ink-muted: #5B6072;
+    --ink-faint: #8B90A0;
+    --accent: #3B3FA8;
+    --accent-soft: #ECEDFA;
+    --good: #1E8E5A;
+    --good-soft: #E5F5EC;
+    --shadow: 0 1px 2px rgba(23,26,35,0.04), 0 8px 24px rgba(23,26,35,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D0F14;
+      --surface: #171A22;
+      --surface-recessed: #12141B;
+      --border: #2A2E3A;
+      --ink: #E7E9F0;
+      --ink-muted: #9096A8;
+      --ink-faint: #676D80;
+      --accent: #9296EE;
+      --accent-soft: #23264A;
+      --good: #4ADE94;
+      --good-soft: #14251C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0D0F14;
+    --surface: #171A22;
+    --surface-recessed: #12141B;
+    --border: #2A2E3A;
+    --ink: #E7E9F0;
+    --ink-muted: #9096A8;
+    --ink-faint: #676D80;
+    --accent: #9296EE;
+    --accent-soft: #23264A;
+    --good: #4ADE94;
+    --good-soft: #14251C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-recessed: #F0F1F5;
+    --border: #DFE2E9;
+    --ink: #171A23;
+    --ink-muted: #5B6072;
+    --ink-faint: #8B90A0;
+    --accent: #3B3FA8;
+    --accent-soft: #ECEDFA;
+    --good: #1E8E5A;
+    --good-soft: #E5F5EC;
+    --shadow: 0 1px 2px rgba(23,26,35,0.04), 0 8px 24px rgba(23,26,35,0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    color: var(--ink-muted);
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 48ch;
+    margin: 0 0 4px;
+  }
+
+  .scope-note {
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin: 0 0 40px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+  }
+
+  .card + .card {
+    margin-top: 20px;
+  }
+
+  .pane-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    background: var(--surface-recessed);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+    outline: none;
+  }
+
+  textarea::placeholder {
+    color: var(--ink-faint);
+  }
+
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .form-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    cursor: pointer;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  button:disabled {
+    background: var(--border);
+    color: var(--ink-faint);
+    cursor: not-allowed;
+  }
+
+  #result {
+    display: none;
+  }
+
+  #result.visible {
+    display: block;
+  }
+
+  .raw-text {
+    font-family: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-muted);
+    background: var(--surface-recessed);
+    border-left: 2px dashed var(--border);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0 0 20px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px 5px 9px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pill-dot { animation: none; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">AddressIQ &middot; ISO 20022</p>
+  <h1>Paste an address.</h1>
+  <p class="subtitle">Paste a hybrid or unstructured payment address below. It gets captured and queued for parsing.</p>
+  <p class="scope-note">Milestone 2 &mdash; capture only, no AI parsing yet. That's milestone 3.</p>
+
+  <div class="card">
+    <p class="pane-label">Original</p>
+    <textarea id="addr-input" placeholder="e.g. Flat 12, 123 MG Road, Near City Mall, Mumbai 400058 India"></textarea>
+    <div class="form-footer">
+      <button id="submit-btn" type="button" disabled>Send for parsing</button>
+    </div>
+  </div>
+
+  <div class="card" id="result">
+    <p class="pane-label">Captured</p>
+    <p class="raw-text" id="raw-echo"></p>
+    <span class="pill"><span class="pill-dot"></span>Queued for parsing</span>
+  </div>
+</div>
+
+<script>
+  var textarea = document.getElementById('addr-input');
+  var btn = document.getElementById('submit-btn');
+  var result = document.getElementById('result');
+  var rawEcho = document.getElementById('raw-echo');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function updateButtonState() {
+    btn.disabled = textarea.value.trim().length === 0;
+  }
+
+  textarea.addEventListener('input', updateButtonState);
+  updateButtonState();
+
+  btn.addEventListener('click', function () {
+    var text = textarea.value.trim();
+    if (!text) { return; }
+    rawEcho.textContent = text;
+    result.classList.add('visible');
+    result.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+  });
+</script>
