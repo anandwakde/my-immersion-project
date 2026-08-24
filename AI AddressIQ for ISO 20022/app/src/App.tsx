@@ -34,11 +34,7 @@ type EditableFields = {
 
 const MAX_INPUT_LENGTH = 1000;
 
-const REQUIRED_KEYS: (keyof EditableFields)[] = [
-  "streetName",
-  "townName",
-  "countryCode",
-];
+const REQUIRED_KEYS = ["streetName", "townName", "countryCode"] as const satisfies readonly (keyof EditableFields)[];
 
 const FORMAT_LABEL: Record<AddressFormat, string> = {
   structured: "Structured",
@@ -229,11 +225,11 @@ export default function App() {
   return (
     <div className="aiq-page">
       <div className="aiq-container">
-        <p className="aiq-eyebrow">AddressIQ &middot; ISO 20022</p>
+        <p className="aiq-eyebrow">AddressIQ &middot; SWIFT ISO 20022</p>
         <h1 className="aiq-h1">Paste an address, get it structured.</h1>
         <p className="aiq-subtitle">
           Paste a hybrid or unstructured payment address below. A real AI
-          call structures it into ISO 20022 fields, flags what's uncertain,
+          call structures it into SWIFT ISO 20022 fields, flags what's uncertain,
           and suggests a fix.
         </p>
 
@@ -274,7 +270,7 @@ export default function App() {
 
         {result && fields && (
           <div className="aiq-card">
-            <p className="aiq-pane-label">Structured &middot; ISO 20022</p>
+            <p className="aiq-pane-label">Structured &middot; SWIFT ISO 20022</p>
             <div className="aiq-status-row">
               {reviewed ? (
                 <span className="aiq-pill aiq-pill-good">Reviewed</span>
@@ -302,7 +298,7 @@ export default function App() {
             </div>
             {result.addressFormat === "unstructured" && (
               <p className="aiq-note">
-                Unstructured addresses are being phased out of ISO 20022
+                Unstructured addresses are being phased out of SWIFT ISO 20022
                 CBPR+ cross-border payments — SWIFT stops accepting them from
                 November 2026. Structured or hybrid (Town Name + Country in
                 their own fields) will be required.
@@ -383,7 +379,7 @@ export default function App() {
 
             {showXmlOutput && fields && (
               <div className="aiq-xml-section">
-                <p className="aiq-pane-label">Structured ISO 20022 output</p>
+                <p className="aiq-pane-label">Structured SWIFT ISO 20022 output</p>
                 <pre className="aiq-xml-output">
                   {buildPstlAdrXml(fields)}
                 </pre>
