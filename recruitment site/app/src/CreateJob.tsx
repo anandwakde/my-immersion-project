@@ -1,4 +1,3 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "../convex/_generated/api";
@@ -10,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { JobApplications } from "@/JobApplications";
 
 export function CreateJob() {
-  const { signOut } = useAuthActions();
   const createJob = useMutation(api.jobs.create);
   const myJobs = useQuery(api.jobs.listMine);
   const [selectedJob, setSelectedJob] = useState<{ id: Id<"jobs">; title: string } | null>(null);
@@ -37,15 +35,13 @@ export function CreateJob() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Post a job</h1>
-        <Button variant="outline" onClick={() => void signOut()}>
-          Sign out
-        </Button>
-      </div>
+      <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Post a job</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Fill in the role details and publish a shareable link for candidates.
+      </p>
 
       <form
-        className="mt-6 flex flex-col gap-4"
+        className="mt-6 flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           setSubmitting(true);
@@ -98,21 +94,21 @@ export function CreateJob() {
       </form>
 
       {lastPublishedUrl && (
-        <div className="mt-6 rounded-md border p-4 text-sm">
-          <p className="font-medium">Published! Share this link with candidates:</p>
-          <a className="mt-1 block break-all underline" href={lastPublishedUrl}>
+        <div className="mt-6 rounded-lg border border-primary/20 bg-accent p-4 text-sm">
+          <p className="font-medium text-accent-foreground">Published! Share this link with candidates:</p>
+          <a className="mt-1 block break-all font-medium text-primary underline" href={lastPublishedUrl}>
             {lastPublishedUrl}
           </a>
         </div>
       )}
 
-      <div className="mt-10">
-        <h2 className="text-lg font-semibold">Your jobs</h2>
-        <ul className="mt-3 flex flex-col gap-2">
+      <div className="mt-12">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Your jobs</h2>
+        <ul className="mt-4 flex flex-col gap-3">
           {myJobs?.map((job) => (
-            <li key={job._id} className="rounded-md border p-3 text-sm">
+            <li key={job._id} className="rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
               <div className="flex items-center justify-between gap-2">
-                <div className="font-medium">{job.title}</div>
+                <div className="font-semibold text-foreground">{job.title}</div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -121,7 +117,7 @@ export function CreateJob() {
                   View applications
                 </Button>
               </div>
-              <a className="break-all text-muted-foreground underline" href={`${publicOrigin}/jobs/${job.slug}`}>
+              <a className="break-all text-primary underline" href={`${publicOrigin}/jobs/${job.slug}`}>
                 {publicOrigin}/jobs/{job.slug}
               </a>
             </li>

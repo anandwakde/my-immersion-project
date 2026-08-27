@@ -34,7 +34,7 @@ export function ApplicationForm({
 
   return (
     <form
-      className="mt-10 flex flex-col gap-4 border-t pt-8"
+      className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
         setSubmitError(null);
@@ -77,7 +77,7 @@ export function ApplicationForm({
           .finally(() => setSubmitting(false));
       }}
     >
-      <h2 className="text-lg font-semibold">Apply for this role</h2>
+      <h2 className="text-lg font-bold text-foreground">Apply for this role</h2>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Full name</Label>

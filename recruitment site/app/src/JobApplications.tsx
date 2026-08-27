@@ -44,13 +44,15 @@ export function JobApplications({
         &larr; Back to jobs
       </Button>
 
-      <h1 className="mt-4 text-2xl font-bold">Applications for {jobTitle}</h1>
+      <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
+        Applications for {jobTitle}
+      </h1>
 
-      <div className="mt-4 flex gap-2 border-b">
+      <div className="mt-4 flex gap-2 border-b border-border">
         <button
           type="button"
-          className={`px-3 py-2 text-sm font-medium ${
-            tab === "all" ? "border-b-2 border-primary" : "text-muted-foreground"
+          className={`px-3 py-2 text-sm font-semibold ${
+            tab === "all" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
           }`}
           onClick={() => setTab("all")}
         >
@@ -58,8 +60,8 @@ export function JobApplications({
         </button>
         <button
           type="button"
-          className={`px-3 py-2 text-sm font-medium ${
-            tab === "shortlisted" ? "border-b-2 border-primary" : "text-muted-foreground"
+          className={`px-3 py-2 text-sm font-semibold ${
+            tab === "shortlisted" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
           }`}
           onClick={() => setTab("shortlisted")}
         >
@@ -72,12 +74,12 @@ export function JobApplications({
           <li key={app._id}>
             <button
               type="button"
-              className="w-full rounded-md border p-4 text-left text-sm hover:bg-accent"
+              className="w-full rounded-lg border border-border bg-card p-4 text-left text-sm shadow-sm transition hover:border-primary/40 hover:bg-accent"
               onClick={() => setSelectedApplicationId(app._id)}
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium">{app.name}</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs">
+                <span className="font-semibold text-foreground">{app.name}</span>
+                <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {STATUS_LABEL[app.status] ?? app.status}
                 </span>
               </div>

@@ -13,13 +13,13 @@ export function ConfirmationScreen({
         </svg>
       </div>
 
-      <h1 className="mt-6 text-2xl font-bold">Application submitted</h1>
+      <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground">Application submitted</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Thanks for applying to <span className="font-medium text-foreground">{jobTitle}</span>. The
         hiring team will review your application and reach out if there's a match.
       </p>
 
-      <div className="mt-8 w-full rounded-md border p-4 text-sm">
+      <div className="mt-8 w-full rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
         <p className="text-muted-foreground">Your application ID</p>
         <p className="mt-1 break-all font-mono text-foreground">{applicationId}</p>
       </div>

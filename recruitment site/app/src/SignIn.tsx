@@ -12,13 +12,13 @@ export function SignIn() {
 
   return (
     <div className="mx-auto max-w-sm px-6 py-16">
-      <h1 className="text-2xl font-bold">Recruiter sign in</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Recruiter sign in</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         {flow === "signIn" ? "Sign in to manage your job postings." : "Create a recruiter account."}
       </p>
 
       <form
-        className="mt-6 flex flex-col gap-4"
+        className="mt-6 flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           setError(null);

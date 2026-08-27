@@ -59,20 +59,20 @@ export function ApplicationDetail({
       )}
 
       {application && (
-        <div className="mt-6 flex flex-col gap-6">
+        <div className="mt-6 flex flex-col gap-6 rounded-lg border border-border bg-card p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">{application.name}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{application.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 Applied {new Date(application._creationTime).toLocaleString()}
               </p>
             </div>
-            <span className="mt-1 shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium">
+            <span className="mt-1 shrink-0 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
               {STATUS_LABEL[application.status] ?? application.status}
             </span>
           </div>
 
-          <dl className="grid grid-cols-1 gap-4 rounded-md border p-4 text-sm sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-muted-foreground">Email</dt>
               <dd className="mt-0.5 break-all">{application.email}</dd>
@@ -85,7 +85,7 @@ export function ApplicationDetail({
               <div className="sm:col-span-2">
                 <dt className="text-muted-foreground">LinkedIn</dt>
                 <dd className="mt-0.5 break-all">
-                  <a className="underline" href={application.linkedin} target="_blank" rel="noopener noreferrer">
+                  <a className="text-primary underline" href={application.linkedin} target="_blank" rel="noopener noreferrer">
                     {application.linkedin}
                   </a>
                 </dd>
@@ -131,7 +131,7 @@ export function ApplicationDetail({
               <button
                 type="button"
                 disabled={downloading}
-                className="text-sm underline disabled:opacity-50"
+                className="text-sm font-medium text-primary underline disabled:opacity-50"
                 onClick={() =>
                   downloadNetlinkResume(
                     application.netlinkResumeUrl!,
