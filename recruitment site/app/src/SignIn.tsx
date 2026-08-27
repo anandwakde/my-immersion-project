@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Asterisk } from "@/Asterisk";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -13,18 +12,13 @@ export function SignIn() {
 
   return (
     <div className="mx-auto max-w-sm px-6 py-16">
-      <Asterisk className="h-8 w-8 text-primary" />
-      <h1 className="font-display mt-2 text-5xl font-extrabold italic leading-[0.95] tracking-tight text-foreground">
-        Recruiter
-        <br />
-        <span className="text-primary">Sign In</span>
-      </h1>
-      <p className="mt-4 text-sm text-muted-foreground">
+      <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Recruiter sign in</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         {flow === "signIn" ? "Sign in to manage your job postings." : "Create a recruiter account."}
       </p>
 
       <form
-        className="mt-6 flex flex-col gap-4 border-2 border-foreground bg-card p-6"
+        className="mt-6 flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           setError(null);

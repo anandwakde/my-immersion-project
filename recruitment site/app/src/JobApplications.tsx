@@ -44,15 +44,15 @@ export function JobApplications({
         &larr; Back to jobs
       </Button>
 
-      <h1 className="font-display mt-4 text-4xl font-extrabold italic leading-[0.95] tracking-tight text-foreground">
-        Applications for <span className="text-primary">{jobTitle}</span>
+      <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
+        Applications for {jobTitle}
       </h1>
 
-      <div className="mt-5 flex gap-2 border-b-2 border-foreground">
+      <div className="mt-4 flex gap-2 border-b border-border">
         <button
           type="button"
-          className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${
-            tab === "all" ? "border-b-4 border-primary text-foreground" : "text-muted-foreground"
+          className={`px-3 py-2 text-sm font-semibold ${
+            tab === "all" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
           }`}
           onClick={() => setTab("all")}
         >
@@ -60,8 +60,8 @@ export function JobApplications({
         </button>
         <button
           type="button"
-          className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${
-            tab === "shortlisted" ? "border-b-4 border-primary text-foreground" : "text-muted-foreground"
+          className={`px-3 py-2 text-sm font-semibold ${
+            tab === "shortlisted" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
           }`}
           onClick={() => setTab("shortlisted")}
         >
@@ -74,12 +74,12 @@ export function JobApplications({
           <li key={app._id}>
             <button
               type="button"
-              className="w-full border-2 border-foreground bg-card p-4 text-left text-sm transition hover:bg-accent"
+              className="w-full rounded-lg border border-border bg-card p-4 text-left text-sm shadow-sm transition hover:border-primary/40 hover:bg-accent"
               onClick={() => setSelectedApplicationId(app._id)}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-foreground">{app.name}</span>
-                <span className="border-2 border-foreground px-2 py-0.5 text-xs font-bold uppercase text-foreground">
+                <span className="font-semibold text-foreground">{app.name}</span>
+                <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {STATUS_LABEL[app.status] ?? app.status}
                 </span>
               </div>

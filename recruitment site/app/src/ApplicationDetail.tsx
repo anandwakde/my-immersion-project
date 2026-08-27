@@ -59,22 +59,20 @@ export function ApplicationDetail({
       )}
 
       {application && (
-        <div className="mt-6 flex flex-col gap-6 border-2 border-foreground bg-card p-6">
+        <div className="mt-6 flex flex-col gap-6 rounded-lg border border-border bg-card p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="font-display text-3xl font-extrabold italic tracking-tight text-foreground">
-                {application.name}
-              </h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{application.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 Applied {new Date(application._creationTime).toLocaleString()}
               </p>
             </div>
-            <span className="mt-1 shrink-0 border-2 border-foreground px-2.5 py-1 text-xs font-bold uppercase text-foreground">
+            <span className="mt-1 shrink-0 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
               {STATUS_LABEL[application.status] ?? application.status}
             </span>
           </div>
 
-          <dl className="grid grid-cols-1 gap-4 border-2 border-foreground bg-background p-4 text-sm sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-muted-foreground">Email</dt>
               <dd className="mt-0.5 break-all">{application.email}</dd>
@@ -100,7 +98,7 @@ export function ApplicationDetail({
               href={application.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-fit bg-primary px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground"
+              className="inline-block w-fit rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
             >
               View resume
             </a>
