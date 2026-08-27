@@ -20,8 +20,6 @@ export function CreateJob() {
   const [experience, setExperience] = useState("");
   const [salary, setSalary] = useState("");
   const [description, setDescription] = useState("");
-  const [responsibilities, setResponsibilities] = useState("");
-  const [skills, setSkills] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [lastPublishedUrl, setLastPublishedUrl] = useState<string | null>(null);
 
@@ -58,14 +56,8 @@ export function CreateJob() {
             experience,
             salary,
             description,
-            responsibilities: responsibilities
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean),
-            skills: skills
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
+            responsibilities: [],
+            skills: [],
           })
             .then(({ slug }) => {
               setLastPublishedUrl(`${publicOrigin}/jobs/${slug}`);
@@ -74,8 +66,6 @@ export function CreateJob() {
               setExperience("");
               setSalary("");
               setDescription("");
-              setResponsibilities("");
-              setSkills("");
             })
             .finally(() => setSubmitting(false));
         }}
@@ -102,21 +92,6 @@ export function CreateJob() {
           <Label htmlFor="description">Job description</Label>
           <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="responsibilities">Responsibilities (one per line)</Label>
-          <Textarea
-            id="responsibilities"
-            value={responsibilities}
-            onChange={(e) => setResponsibilities(e.target.value)}
-            required
-            rows={4}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="skills">Required skills (comma separated)</Label>
-          <Input id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} required />
-        </div>
-
         <Button type="submit" disabled={submitting}>
           Publish job
         </Button>

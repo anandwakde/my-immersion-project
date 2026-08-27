@@ -58,14 +58,16 @@ export function ApplicationDetail({
               <dt className="text-muted-foreground">Phone</dt>
               <dd className="mt-0.5">{application.phone}</dd>
             </div>
-            <div className="sm:col-span-2">
-              <dt className="text-muted-foreground">LinkedIn</dt>
-              <dd className="mt-0.5 break-all">
-                <a className="underline" href={application.linkedin} target="_blank" rel="noopener noreferrer">
-                  {application.linkedin}
-                </a>
-              </dd>
-            </div>
+            {application.linkedin && (
+              <div className="sm:col-span-2">
+                <dt className="text-muted-foreground">LinkedIn</dt>
+                <dd className="mt-0.5 break-all">
+                  <a className="underline" href={application.linkedin} target="_blank" rel="noopener noreferrer">
+                    {application.linkedin}
+                  </a>
+                </dd>
+              </div>
+            )}
           </dl>
 
           {application.resumeUrl ? (

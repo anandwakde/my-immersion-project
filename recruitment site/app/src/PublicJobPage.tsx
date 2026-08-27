@@ -44,25 +44,29 @@ export function PublicJobPage({ slug }: { slug: string }) {
         <p className="mt-2 text-sm leading-relaxed">{job.description}</p>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">Responsibilities</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed">
-          {job.responsibilities.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </section>
+      {job.responsibilities.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold">Responsibilities</h2>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed">
+            {job.responsibilities.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">Required skills</h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {job.skills.map((skill) => (
-            <span key={skill} className="rounded-full border px-3 py-1 text-xs font-medium">
-              {skill}
-            </span>
-          ))}
-        </div>
-      </section>
+      {job.skills.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold">Required skills</h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {job.skills.map((skill) => (
+              <span key={skill} className="rounded-full border px-3 py-1 text-xs font-medium">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {!showForm && (
         <button

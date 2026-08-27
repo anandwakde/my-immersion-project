@@ -27,7 +27,6 @@ export function ApplicationForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [linkedin, setLinkedin] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -63,7 +62,7 @@ export function ApplicationForm({
             name,
             email,
             phone,
-            linkedin,
+            linkedin: "",
             resumeStorageId: storageId,
           });
           onSubmitted(newId);
@@ -93,17 +92,6 @@ export function ApplicationForm({
           <Label htmlFor="phone">Phone</Label>
           <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
         </div>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="linkedin">LinkedIn profile URL</Label>
-        <Input
-          id="linkedin"
-          type="url"
-          value={linkedin}
-          onChange={(e) => setLinkedin(e.target.value)}
-          placeholder="https://linkedin.com/in/..."
-          required
-        />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="resume">Resume (PDF or Word, under 5MB)</Label>
