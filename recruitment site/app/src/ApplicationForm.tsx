@@ -77,7 +77,9 @@ export function ApplicationForm({
           .finally(() => setSubmitting(false));
       }}
     >
-      <h2 className="text-lg font-bold text-foreground">Apply for this role</h2>
+      <h2 className="font-display text-3xl font-extrabold italic tracking-tight text-foreground">
+        Apply <span className="text-primary">Now</span>
+      </h2>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Full name</Label>

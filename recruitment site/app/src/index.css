@@ -6,35 +6,35 @@
   or use the "Copy code" button at https://ui.shadcn.com/themes */
 @layer base {
   :root {
-    --background: 200 15% 96%;
-    --foreground: 215 25% 27%;
+    --background: 240 4% 90%;
+    --foreground: 240 10% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 240 10% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 240 10% 4%;
 
-    --primary: 204 90% 45%;
+    --primary: 221 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 15% 96%;
-    --secondary-foreground: 215 29% 30%;
+    --secondary: 240 10% 4%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 15% 94%;
-    --muted-foreground: 215 15% 46%;
+    --muted: 240 5% 84%;
+    --muted-foreground: 240 6% 35%;
 
-    --accent: 204 90% 95%;
-    --accent-foreground: 215 29% 30%;
+    --accent: 221 100% 94%;
+    --accent-foreground: 221 100% 30%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 60 9.1% 97.8%;
 
-    --border: 216 20% 88%;
-    --input: 216 20% 88%;
-    --ring: 204 90% 45%;
+    --border: 240 10% 4%;
+    --input: 240 10% 4%;
+    --ring: 221 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
   }
 
   .dark {
@@ -74,5 +74,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Bricolage Grotesque", "Inter", sans-serif;
   }
 }

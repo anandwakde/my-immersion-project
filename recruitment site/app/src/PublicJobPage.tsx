@@ -3,6 +3,7 @@ import { useState } from "react";
 import { api } from "../convex/_generated/api";
 import { ApplicationForm } from "@/ApplicationForm";
 import { ConfirmationScreen } from "@/ConfirmationScreen";
+import { Asterisk } from "@/Asterisk";
 
 export function PublicJobPage({ slug }: { slug: string }) {
   const job = useQuery(api.jobs.getBySlug, { slug });
@@ -28,73 +29,82 @@ export function PublicJobPage({ slug }: { slug: string }) {
     return <ConfirmationScreen jobTitle={job.title} applicationId={submittedApplicationId} />;
   }
 
+  const titleWords = job.title.trim().split(" ");
+  const lastWord = titleWords.pop();
+  const leadWords = titleWords.join(" ");
+
   return (
-    <div>
-      <div className="bg-gradient-to-br from-[#1e3a56] to-[#2c5680]">
-        <div className="mx-auto max-w-2xl px-6 py-16">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{job.title}</h1>
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-blue-100">
-            <span>{job.location}</span>
-            <span>•</span>
-            <span>{job.experience}</span>
-            <span>•</span>
-            <span>{job.salary}</span>
-          </div>
-
-          {!showForm && (
-            <button
-              type="button"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
-              onClick={() => setShowForm(true)}
-            >
-              Apply Now
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </button>
-          )}
-        </div>
+    <div className="relative mx-auto max-w-2xl px-6 py-16">
+      <div className="hidden select-none flex-col items-center gap-3 text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground sm:absolute sm:right-2 sm:top-16 sm:flex">
+        <span style={{ writingMode: "vertical-rl" }}>{job.location}</span>
       </div>
 
-      <div className="mx-auto max-w-2xl px-6 py-12">
-        <section className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-foreground">About the role</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{job.description}</p>
+      <Asterisk className="h-10 w-10 text-primary" />
+      <h1 className="font-display mt-3 max-w-xl text-6xl font-extrabold italic leading-[0.92] tracking-tight text-foreground">
+        {leadWords ? `${leadWords} ` : ""}
+        <span className="text-primary">{lastWord}</span>
+      </h1>
+
+      <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold text-foreground">
+        <span>{job.location}</span>
+        <span className="text-primary">•</span>
+        <span>{job.experience}</span>
+        <span className="text-primary">•</span>
+        <span>{job.salary}</span>
+      </div>
+
+      <section className="mt-10">
+        <p className="max-w-xl text-base leading-relaxed text-foreground">{job.description}</p>
+      </section>
+
+      {job.responsibilities.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-foreground">Requirements:</h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {job.responsibilities.map((item) => (
+              <li key={item} className="flex gap-3 text-sm leading-relaxed text-foreground">
+                <span className="font-bold text-primary">&rarr;</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </section>
+      )}
 
-        {job.responsibilities.length > 0 && (
-          <section className="mt-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-foreground">Responsibilities</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
-              {job.responsibilities.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {job.skills.length > 0 && (
-          <section className="mt-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-foreground">Required skills</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {job.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {showForm && (
-          <div className="mt-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-            <ApplicationForm jobId={job._id} onSubmitted={setSubmittedApplicationId} />
+      {job.skills.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-foreground">Skills</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {job.skills.map((skill) => (
+              <span
+                key={skill}
+                className="border-2 border-foreground bg-card px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground"
+              >
+                {skill}
+              </span>
+            ))}
           </div>
-        )}
-      </div>
+        </section>
+      )}
+
+      {!showForm && (
+        <button
+          type="button"
+          className="mt-12 inline-flex items-center gap-2 bg-primary px-8 py-4 text-sm font-bold uppercase tracking-wide text-primary-foreground transition hover:brightness-110"
+          onClick={() => setShowForm(true)}
+        >
+          Apply Now
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      )}
+
+      {showForm && (
+        <div className="mt-10 border-2 border-foreground bg-card p-6">
+          <ApplicationForm jobId={job._id} onSubmitted={setSubmittedApplicationId} />
+        </div>
+      )}
     </div>
   );
 }
