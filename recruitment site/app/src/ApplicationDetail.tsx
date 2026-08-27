@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useState } from "react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
@@ -19,7 +20,10 @@ export function ApplicationDetail({
 }) {
   const application = useQuery(api.applications.get, { applicationId });
   const setStatus = useMutation(api.applications.setStatus);
+  const convertToNetlink = useAction(api.netlinkConvert.convert);
   const [updating, setUpdating] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [convertError, setConvertError] = useState<string | null>(null);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
@@ -82,6 +86,39 @@ export function ApplicationDetail({
           ) : (
             <p className="text-sm text-destructive">Resume file is missing.</p>
           )}
+
+          <div className="flex flex-col items-start gap-2">
+            <Button
+              variant="outline"
+              disabled={converting}
+              onClick={() => {
+                setConverting(true);
+                setConvertError(null);
+                convertToNetlink({ applicationId })
+                  .catch((err) => {
+                    setConvertError(
+                      err instanceof ConvexError && typeof err.data === "string"
+                        ? err.data
+                        : "Conversion failed. Please try again.",
+                    );
+                  })
+                  .finally(() => setConverting(false));
+              }}
+            >
+              {converting ? "Converting..." : "Convert to Netlink format"}
+            </Button>
+            {convertError && <p className="text-sm text-destructive">{convertError}</p>}
+            {application.netlinkResumeUrl && (
+              <a
+                href={application.netlinkResumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline"
+              >
+                Download Netlink-format CV
+              </a>
+            )}
+          </div>
 
           <div className="flex gap-3">
             <Button

@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 const ALLOWED_RESUME_TYPES = [
@@ -96,7 +96,54 @@ export const get = query({
       return null;
     }
     const resumeUrl = await ctx.storage.getUrl(application.resumeStorageId);
-    return { ...application, resumeUrl };
+    const netlinkResumeUrl = application.netlinkResumeStorageId
+      ? await ctx.storage.getUrl(application.netlinkResumeStorageId)
+      : null;
+    return { ...application, resumeUrl, netlinkResumeUrl };
+  },
+});
+
+export const getForConvert = internalQuery({
+  args: { applicationId: v.id("applications") },
+  returns: v.union(
+    v.null(),
+    v.object({
+      name: v.string(),
+      resumeStorageId: v.id("_storage"),
+      resumeContentType: v.union(v.string(), v.null()),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return null;
+    }
+    const application = await ctx.db.get("applications", args.applicationId);
+    if (application === null) {
+      return null;
+    }
+    const job = await ctx.db.get("jobs", application.jobId);
+    if (job === null || job.createdBy !== userId) {
+      return null;
+    }
+    const resumeMeta = await ctx.db.system.get("_storage", application.resumeStorageId);
+    return {
+      name: application.name,
+      resumeStorageId: application.resumeStorageId,
+      resumeContentType: resumeMeta?.contentType ?? null,
+    };
+  },
+});
+
+export const setNetlinkResume = internalMutation({
+  args: {
+    applicationId: v.id("applications"),
+    netlinkResumeStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch("applications", args.applicationId, {
+      netlinkResumeStorageId: args.netlinkResumeStorageId,
+    });
   },
 });
 

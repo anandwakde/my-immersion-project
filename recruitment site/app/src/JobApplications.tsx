@@ -11,6 +11,8 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: "Rejected",
 };
 
+type Tab = "all" | "shortlisted";
+
 export function JobApplications({
   jobId,
   jobTitle,
@@ -22,6 +24,7 @@ export function JobApplications({
 }) {
   const applications = useQuery(api.applications.listForJob, { jobId });
   const [selectedApplicationId, setSelectedApplicationId] = useState<Id<"applications"> | null>(null);
+  const [tab, setTab] = useState<Tab>("all");
 
   if (selectedApplicationId) {
     return (
@@ -32,6 +35,9 @@ export function JobApplications({
     );
   }
 
+  const visibleApplications =
+    tab === "shortlisted" ? applications?.filter((app) => app.status === "shortlisted") : applications;
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
       <Button variant="outline" onClick={onBack}>
@@ -40,8 +46,29 @@ export function JobApplications({
 
       <h1 className="mt-4 text-2xl font-bold">Applications for {jobTitle}</h1>
 
+      <div className="mt-4 flex gap-2 border-b">
+        <button
+          type="button"
+          className={`px-3 py-2 text-sm font-medium ${
+            tab === "all" ? "border-b-2 border-primary" : "text-muted-foreground"
+          }`}
+          onClick={() => setTab("all")}
+        >
+          All applications
+        </button>
+        <button
+          type="button"
+          className={`px-3 py-2 text-sm font-medium ${
+            tab === "shortlisted" ? "border-b-2 border-primary" : "text-muted-foreground"
+          }`}
+          onClick={() => setTab("shortlisted")}
+        >
+          Shortlisted
+        </button>
+      </div>
+
       <ul className="mt-6 flex flex-col gap-3">
-        {applications?.map((app) => (
+        {visibleApplications?.map((app) => (
           <li key={app._id}>
             <button
               type="button"
@@ -58,8 +85,10 @@ export function JobApplications({
             </button>
           </li>
         ))}
-        {applications?.length === 0 && (
-          <li className="text-sm text-muted-foreground">No applications yet for this job.</li>
+        {visibleApplications?.length === 0 && (
+          <li className="text-sm text-muted-foreground">
+            {tab === "shortlisted" ? "No shortlisted candidates yet." : "No applications yet for this job."}
+          </li>
         )}
       </ul>
     </div>
