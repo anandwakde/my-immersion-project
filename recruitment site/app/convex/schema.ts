@@ -29,6 +29,7 @@ export default defineSchema({
     resumeStorageId: v.id("_storage"),
     status: v.union(v.literal("new"), v.literal("shortlisted"), v.literal("rejected")),
     netlinkResumeStorageId: v.optional(v.id("_storage")),
+    netlinkResumeFileName: v.optional(v.string()),
   })
     .index("by_jobId", ["jobId"])
     .index("by_jobId_and_email", ["jobId", "email"]),

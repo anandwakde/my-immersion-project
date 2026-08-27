@@ -24,6 +24,25 @@ export function ApplicationDetail({
   const [updating, setUpdating] = useState(false);
   const [converting, setConverting] = useState(false);
   const [convertError, setConvertError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  async function downloadNetlinkResume(url: string, fileName: string) {
+    setDownloading(true);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
@@ -109,14 +128,19 @@ export function ApplicationDetail({
             </Button>
             {convertError && <p className="text-sm text-destructive">{convertError}</p>}
             {application.netlinkResumeUrl && (
-              <a
-                href={application.netlinkResumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm underline"
+              <button
+                type="button"
+                disabled={downloading}
+                className="text-sm underline disabled:opacity-50"
+                onClick={() =>
+                  downloadNetlinkResume(
+                    application.netlinkResumeUrl!,
+                    application.netlinkResumeFileName ?? "Netlink-CV.docx",
+                  )
+                }
               >
-                Download Netlink-format CV
-              </a>
+                {downloading ? "Downloading..." : "Download Netlink-format CV"}
+              </button>
             )}
           </div>
 

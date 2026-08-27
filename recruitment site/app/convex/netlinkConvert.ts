@@ -216,6 +216,7 @@ If a section is genuinely absent from the resume, return an empty array (or empt
     await ctx.runMutation(internal.applications.setNetlinkResume, {
       applicationId: args.applicationId,
       netlinkResumeStorageId,
+      netlinkResumeFileName: `${initials}.docx`,
     });
 
     return { netlinkResumeStorageId };

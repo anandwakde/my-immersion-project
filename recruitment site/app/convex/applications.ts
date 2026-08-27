@@ -139,10 +139,12 @@ export const setNetlinkResume = internalMutation({
   args: {
     applicationId: v.id("applications"),
     netlinkResumeStorageId: v.id("_storage"),
+    netlinkResumeFileName: v.string(),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch("applications", args.applicationId, {
       netlinkResumeStorageId: args.netlinkResumeStorageId,
+      netlinkResumeFileName: args.netlinkResumeFileName,
     });
   },
 });
