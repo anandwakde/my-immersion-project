@@ -30,7 +30,19 @@ export default defineSchema({
     status: v.union(v.literal("new"), v.literal("shortlisted"), v.literal("rejected")),
     netlinkResumeStorageId: v.optional(v.id("_storage")),
     netlinkResumeFileName: v.optional(v.string()),
+    clientStatus: v.optional(v.union(v.literal("accepted"), v.literal("rejected"))),
+    clientRejectionReason: v.optional(v.string()),
+    clientRespondedAt: v.optional(v.number()),
   })
     .index("by_jobId", ["jobId"])
     .index("by_jobId_and_email", ["jobId", "email"]),
+
+  shareLinks: defineTable({
+    jobId: v.id("jobs"),
+    token: v.string(),
+    expiresAt: v.number(),
+    createdBy: v.id("users"),
+  })
+    .index("by_token", ["token"])
+    .index("by_jobId", ["jobId"]),
 });

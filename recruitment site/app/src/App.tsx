@@ -3,8 +3,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { CreateJob } from "@/CreateJob";
 import { SignIn } from "@/SignIn";
 import { PublicJobPage } from "@/PublicJobPage";
+import { ClientReviewPage } from "@/ClientReviewPage";
+import { ClientResumeViewPage } from "@/ClientResumeViewPage";
 import { AppHeader } from "@/AppHeader";
 import { Button } from "@/components/ui/button";
+import { Id } from "../convex/_generated/dataModel";
 
 function SignOutAction() {
   const { signOut } = useAuthActions();
@@ -22,6 +25,29 @@ export default function App() {
       <>
         <AppHeader />
         <PublicJobPage slug={jobMatch[1]} />
+      </>
+    );
+  }
+
+  const clientResumeMatch = window.location.pathname.match(/^\/client\/([^/]+)\/view\/([^/]+)\/?$/);
+  if (clientResumeMatch) {
+    return (
+      <>
+        <AppHeader />
+        <ClientResumeViewPage
+          token={clientResumeMatch[1]}
+          applicationId={clientResumeMatch[2] as Id<"applications">}
+        />
+      </>
+    );
+  }
+
+  const clientMatch = window.location.pathname.match(/^\/client\/([^/]+)\/?$/);
+  if (clientMatch) {
+    return (
+      <>
+        <AppHeader />
+        <ClientReviewPage token={clientMatch[1]} />
       </>
     );
   }
