@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MEA Payment Intelligence Monitor — Dashboard</title>
+<title>Payment Scheme Intelligence Monitor — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -254,6 +254,158 @@
   }
   .ref a{ color: var(--ink-mid); text-decoration: underline; }
   .ref a:hover{ color: var(--ink); }
+
+  /* ---------- RELEVANCE (Why this applies) ---------- */
+  .relevance-section{ margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--card-soft); }
+  .relevance-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .relevance-pill::before{ content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .relevance-pill.applies{ background: rgba(52,195,143,0.14); color: var(--on-track); }
+  .relevance-pill.not-applies{ background: rgba(232,86,76,0.12); color: var(--overdue); }
+  .relevance-reason{ margin-top: var(--sp-2); font-size: 12.5px; color: var(--ink-mid); line-height: 1.4; }
+  .btn-check-relevance.btn-error{ background: rgba(232,86,76,0.14); color: var(--overdue); }
+  .btn-recheck{
+    display: block;
+    margin-top: var(--sp-2);
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+  .btn-view-detail{
+    display: block;
+    margin-top: var(--sp-3);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- CIRCULAR DETAIL MODAL ---------- */
+  .detail-modal-backdrop{
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(20, 15, 50, 0.55);
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+  .detail-modal-backdrop.open{ display: flex; }
+  .detail-modal{
+    background: var(--card);
+    border-radius: 22px;
+    max-width: 680px;
+    width: 100%;
+    padding: var(--sp-6);
+    position: relative;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+    color: var(--ink);
+  }
+  .detail-modal-close{
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--card-soft);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .detail-scheme{ font-size: 11.5px; font-weight: 600; color: var(--ink-mid); letter-spacing: 0.03em; }
+  .detail-title{ font-size: 20px; font-weight: 700; color: var(--ink); margin-top: 4px; line-height: 1.3; }
+  .detail-section{ margin-top: var(--sp-5); }
+  .detail-section h3{
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-mid);
+    margin: 0 0 var(--sp-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .financial-impact-text{ font-size: 14px; color: var(--ink); line-height: 1.5; }
+  .plan-item-row{
+    border: 1px solid rgba(43,35,80,0.12);
+    border-radius: 14px;
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-3);
+  }
+  .plan-item-desc{ font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 var(--sp-3); line-height: 1.4; }
+  .plan-item-fields{ display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+  .plan-item-fields input{
+    flex: 1;
+    min-width: 140px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(43,35,80,0.2);
+    color: var(--ink);
+    background: #fff;
+  }
+  .btn-save-plan{
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--card-soft);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .evidence-block{ border-top: 1px dashed rgba(43,35,80,0.15); padding-top: var(--sp-3); margin-top: var(--sp-3); }
+  .evidence-type-row{ display: flex; gap: var(--sp-3); margin-bottom: var(--sp-2); font-size: 12.5px; color: var(--ink-mid); }
+  .evidence-type-row label{ display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+  .evidence-input-row{ display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+  .evidence-input-row input[type="text"], .evidence-input-row input[type="file"]{
+    flex: 1;
+    min-width: 160px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(43,35,80,0.2);
+    background: #fff;
+    color: var(--ink);
+  }
+  .signed-off-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--on-track);
+  }
+  .signed-off-badge::before{ content: "✓"; }
+  .evidence-summary{ margin-top: 4px; font-size: 12.5px; color: var(--ink-mid); }
+  .evidence-summary a{ color: var(--ink); text-decoration: underline; }
 
   /* ---------- TASKS TAB ---------- */
   .task-list{ margin-bottom: var(--sp-7); }
@@ -613,22 +765,184 @@
   @media (max-width: 600px){
     .live-badge{ position: static; margin-bottom: var(--sp-4); }
   }
+
+  /* ---------- AUTH SCREEN ---------- */
+  .auth-screen{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-6);
+  }
+  .auth-card{
+    background: var(--card);
+    border-radius: 22px;
+    padding: var(--sp-6);
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+  }
+  .auth-title{ font-size: 22px; font-weight: 700; color: var(--ink); margin: 0 0 4px; }
+  .auth-sub{ font-size: 13.5px; color: var(--ink-mid); margin: 0 0 var(--sp-5); }
+  .auth-field{ margin-bottom: var(--sp-4); }
+  .auth-field label{ display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .auth-field input[type="text"], .auth-field input[type="email"], .auth-field input[type="password"], .auth-field select{
+    display: block;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--card-soft);
+    border: 1px solid rgba(43,35,80,0.14);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .auth-field-hint{ font-size: 12px; color: var(--ink-low); margin-top: 4px; }
+  .auth-scheme-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: var(--sp-3);
+    background: var(--card-soft);
+    border-radius: 12px;
+  }
+  .auth-scheme-grid label{ display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .auth-scheme-grid input{ accent-color: var(--bg); }
+  .btn-auth-submit{
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    background: var(--bg);
+    border: none;
+    border-radius: 999px;
+    padding: 12px 20px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-auth-submit:disabled{ opacity: 0.6; cursor: default; }
+  .auth-switch{ margin-top: var(--sp-4); font-size: 13px; color: var(--ink-mid); text-align: center; }
+  .auth-switch button{
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--bg);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    font-size: 13px;
+  }
+  .auth-error{ font-size: 13px; color: var(--overdue); font-weight: 600; margin-top: var(--sp-3); min-height: 16px; }
+  .auth-step{ display: none; }
+  .auth-step.active{ display: block; }
+  .btn-logout{
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .user-bar{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.7);
+  }
 </style>
 </head>
 <body>
+
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-card">
+      <form class="auth-step active" id="login-form">
+        <h2 class="auth-title">Log in</h2>
+        <p class="auth-sub">Payment Scheme Intelligence Monitor</p>
+        <div class="auth-field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-auth-submit">Log in</button>
+        <p class="auth-error" id="login-error"></p>
+        <p class="auth-switch">No account yet? <button type="button" id="show-signup">Sign up</button></p>
+      </form>
+
+      <form class="auth-step" id="signup-form">
+        <h2 class="auth-title">Create your account</h2>
+        <p class="auth-sub">Tell us about your company so we can tell you what actually applies to you.</p>
+        <div class="auth-field">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" required autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required autocomplete="new-password" minlength="8" />
+          <p class="auth-field-hint">At least 8 characters.</p>
+        </div>
+        <div class="auth-field">
+          <label for="signup-entity-name">Legal entity name</label>
+          <input type="text" id="signup-entity-name" placeholder="e.g. Acme Acquiring FZE" required />
+        </div>
+        <div class="auth-field">
+          <label for="signup-customer-type">What type of company are you?</label>
+          <select id="signup-customer-type">
+            <option>Issuer</option>
+            <option>Acquirer</option>
+            <option>Processor</option>
+            <option>Fintech</option>
+            <option>Merchant</option>
+            <option>Payment Institution</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label for="signup-countries">Countries you operate in</label>
+          <input type="text" id="signup-countries" placeholder="e.g. UAE, Saudi Arabia, Egypt" required />
+          <p class="auth-field-hint">Comma-separated. Any country in the world — not limited to the Middle East.</p>
+        </div>
+        <div class="auth-field">
+          <label>Schemes you participate in</label>
+          <div class="auth-scheme-grid" id="signup-scheme-grid"></div>
+        </div>
+        <button type="submit" class="btn-auth-submit">Create account</button>
+        <p class="auth-error" id="signup-error"></p>
+        <p class="auth-switch">Already have an account? <button type="button" id="show-login">Log in</button></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="app-shell" style="display:none;">
 
   <header class="hero">
     <div class="live-badge" title="Automatically re-scans every source every 24 hours">
       <span class="live-dot"></span>
       Live
     </div>
-    <h1 class="product-title">MEA PIM <span class="product-sub">(Payment Intelligence Monitor)</span></h1>
+    <h1 class="product-title">Payment Scheme Intelligence Monitor</h1>
+    <div class="user-bar">
+      <span id="user-bar-email"></span>
+      <button type="button" class="btn-logout" id="logout-btn">Log out</button>
+    </div>
     <div class="main-tabs" id="main-tabs">
       <button type="button" class="main-tab active" data-tab="circulars">Circulars</button>
       <button type="button" class="main-tab" data-tab="tasks">Tasks</button>
       <button type="button" class="main-tab" data-tab="calendar">Calendar</button>
       <button type="button" class="main-tab" data-tab="upload">Upload</button>
       <button type="button" class="main-tab" data-tab="subscribe">Subscribe</button>
+      <button type="button" class="main-tab" data-tab="profile">Company Profile</button>
+      <button type="button" class="main-tab" data-tab="inbox">Publications Inbox</button>
     </div>
   </header>
 
@@ -729,7 +1043,60 @@
       <p class="subscribe-confirm" id="subscribe-confirm"></p>
     </section>
 
+    <!-- ---------- COMPANY PROFILE TAB ---------- -->
+    <section class="tab-panel" id="panel-profile">
+      <h2 class="section-heading">Company profile</h2>
+      <p class="subscribe-intro">
+        This decides which circulars actually apply to you — anywhere in the world, across every scheme you participate in.
+      </p>
+      <form class="upload-form" id="profile-form">
+        <div class="upload-field">
+          <label class="upload-label" for="profile-entity-name">Legal entity name</label>
+          <input type="text" id="profile-entity-name" placeholder="e.g. Acme Acquiring FZE" required />
+        </div>
+        <div class="upload-field">
+          <label class="upload-label" for="profile-customer-type">Customer type</label>
+          <select id="profile-customer-type">
+            <option>Issuer</option>
+            <option>Acquirer</option>
+            <option>Processor</option>
+            <option>Fintech</option>
+            <option>Merchant</option>
+            <option>Payment Institution</option>
+          </select>
+        </div>
+        <div class="upload-field">
+          <label class="upload-label" for="profile-countries">Countries you operate in</label>
+          <input type="text" id="profile-countries" placeholder="e.g. UAE, Saudi Arabia, Egypt" />
+        </div>
+        <div class="upload-field">
+          <label class="upload-label">Schemes</label>
+          <div class="auth-scheme-grid" id="profile-scheme-grid" style="max-height:220px;"></div>
+        </div>
+        <button type="submit" class="btn-upload">Save profile</button>
+      </form>
+      <p class="upload-status" id="profile-status"></p>
+    </section>
+
+    <!-- ---------- PUBLICATIONS INBOX TAB ---------- -->
+    <section class="tab-panel" id="panel-inbox">
+      <h2 class="section-heading">New publications inbox</h2>
+      <p class="subscribe-intro">
+        Publications for the schemes in your company profile, with a relevance verdict for your specific company.
+      </p>
+      <div id="inbox-list" class="card-grid">
+        <p class="empty-state">Loading publications…</p>
+      </div>
+    </section>
+
   </main>
+
+  <div class="detail-modal-backdrop" id="detail-modal-backdrop">
+    <div class="detail-modal">
+      <button type="button" class="detail-modal-close" id="detail-modal-close" aria-label="Close">&times;</button>
+      <div id="detail-modal-body"></div>
+    </div>
+  </div>
 
   <button type="button" class="chat-toggle" id="chat-toggle" aria-label="Open chat assistant">
     <svg viewBox="0 0 24 24" fill="none">
@@ -754,14 +1121,160 @@
     </form>
   </div>
 
+  </div><!-- /#app-shell -->
+
 <script>
   (function(){
     var CONVEX_SITE_URL = 'https://calculating-ptarmigan-789.convex.site';
+
+    var ALL_SCHEMES = [
+      'UnionPay', 'Visa', 'Mastercard', 'RuPay', 'Mir', 'Discover', 'JCB', 'American Express',
+      'girocard', 'TROY', 'Cartes Bancaires (CB)', 'eftpos', 'Elo', 'PagoBANCOMAT', 'Multibanco',
+      'Bancontact', 'mada', 'KNET', 'Benefit', 'Meeza', 'OmanNet', 'UAESWITCH', 'Verve',
+      'InterSwitch', 'NETS', 'BC Card', 'Dankort', 'EFTPOS NZ', 'ArCa', 'BELCARD', 'Uzcard',
+      'HUMO', 'Cabal', 'Carnet', 'Transbank', 'Gh-Link', 'EPI / Wero', 'Naranja X', 'Korti Milli'
+    ];
 
     function escapeHtml(str){
       var div = document.createElement('div');
       div.textContent = str == null ? '' : String(str);
       return div.innerHTML;
+    }
+
+    function schemeGridHtml(idPrefix, checkedSchemes){
+      checkedSchemes = checkedSchemes || [];
+      return ALL_SCHEMES.map(function(scheme){
+        var checked = checkedSchemes.indexOf(scheme) !== -1 ? ' checked' : '';
+        return '<label><input type="checkbox" class="' + idPrefix + '-scheme-check" value="' +
+          escapeHtml(scheme) + '"' + checked + ' /> ' + escapeHtml(scheme) + '</label>';
+      }).join('');
+    }
+
+    /* ---------- AUTH ---------- */
+    var authToken = localStorage.getItem('pim_token') || '';
+    var currentUserEmail = '';
+
+    var authScreen = document.getElementById('auth-screen');
+    var appShell = document.getElementById('app-shell');
+    var loginForm = document.getElementById('login-form');
+    var signupForm = document.getElementById('signup-form');
+    var loginError = document.getElementById('login-error');
+    var signupError = document.getElementById('signup-error');
+
+    document.getElementById('signup-scheme-grid').innerHTML = schemeGridHtml('signup');
+    document.getElementById('show-signup').addEventListener('click', function(){
+      loginForm.classList.remove('active');
+      signupForm.classList.add('active');
+    });
+    document.getElementById('show-login').addEventListener('click', function(){
+      signupForm.classList.remove('active');
+      loginForm.classList.add('active');
+    });
+
+    function authHeaders(){
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+    }
+
+    function showApp(email){
+      currentUserEmail = email;
+      document.getElementById('user-bar-email').textContent = email;
+      authScreen.style.display = 'none';
+      appShell.style.display = 'block';
+      initApp();
+    }
+
+    function showAuthScreen(){
+      authToken = '';
+      localStorage.removeItem('pim_token');
+      appShell.style.display = 'none';
+      authScreen.style.display = 'flex';
+    }
+
+    loginForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var btn = loginForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      loginError.textContent = '';
+      fetch(CONVEX_SITE_URL + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value
+        })
+      })
+        .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'Login failed'); return data; }); })
+        .then(function(data){
+          authToken = data.token;
+          localStorage.setItem('pim_token', authToken);
+          btn.disabled = false;
+          return fetch(CONVEX_SITE_URL + '/auth/me', { headers: authHeaders() }).then(function(r){ return r.json(); });
+        })
+        .then(function(me){ showApp(me.email); })
+        .catch(function(err){
+          btn.disabled = false;
+          loginError.textContent = err.message || 'Something went wrong.';
+        });
+    });
+
+    signupForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var btn = signupForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      signupError.textContent = '';
+      var schemes = Array.from(document.querySelectorAll('.signup-scheme-check:checked')).map(function(el){ return el.value; });
+      var countries = document.getElementById('signup-countries').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+      if(schemes.length === 0){
+        btn.disabled = false;
+        signupError.textContent = 'Select at least one scheme.';
+        return;
+      }
+      fetch(CONVEX_SITE_URL + '/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('signup-email').value,
+          password: document.getElementById('signup-password').value,
+          legalEntityName: document.getElementById('signup-entity-name').value,
+          customerType: document.getElementById('signup-customer-type').value,
+          countries: countries,
+          schemes: schemes
+        })
+      })
+        .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'Signup failed'); return data; }); })
+        .then(function(data){
+          authToken = data.token;
+          localStorage.setItem('pim_token', authToken);
+          btn.disabled = false;
+          return fetch(CONVEX_SITE_URL + '/auth/me', { headers: authHeaders() }).then(function(r){ return r.json(); });
+        })
+        .then(function(me){ showApp(me.email); })
+        .catch(function(err){
+          btn.disabled = false;
+          signupError.textContent = err.message || 'Something went wrong.';
+        });
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', function(){
+      fetch(CONVEX_SITE_URL + '/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: authToken })
+      }).catch(function(){ /* logout locally regardless */ }).then(function(){
+        showAuthScreen();
+      });
+    });
+
+    var appInitialized = false;
+
+    if(authToken){
+      fetch(CONVEX_SITE_URL + '/auth/me', { headers: authHeaders() })
+        .then(function(res){ if(!res.ok) throw new Error('expired'); return res.json(); })
+        .then(function(me){
+          if(!me) throw new Error('expired');
+          showApp(me.email);
+        })
+        .catch(function(){ showAuthScreen(); });
     }
 
     /* ---------- TOP-LEVEL TAB SWITCHING ---------- */
@@ -907,21 +1420,23 @@
       applyFilters();
     });
 
-    fetch(CONVEX_SITE_URL + '/circulars')
-      .then(function(res){ if(!res.ok) throw new Error('request failed'); return res.json(); })
-      .then(function(list){
-        allCirculars = list;
-        if(!list.length){
-          circularContainer.innerHTML = '<p class="empty-state">No circulars yet.</p>';
-          return;
-        }
-        populateSchemeOptions(list);
-        applyFilters();
-        initCalendar();
-      })
-      .catch(function(){
-        circularContainer.innerHTML = '<p class="empty-state">Couldn\'t load circulars — check your connection and reload.</p>';
-      });
+    function loadCirculars(){
+      fetch(CONVEX_SITE_URL + '/circulars')
+        .then(function(res){ if(!res.ok) throw new Error('request failed'); return res.json(); })
+        .then(function(list){
+          allCirculars = list;
+          if(!list.length){
+            circularContainer.innerHTML = '<p class="empty-state">No circulars yet.</p>';
+            return;
+          }
+          populateSchemeOptions(list);
+          applyFilters();
+          initCalendar();
+        })
+        .catch(function(){
+          circularContainer.innerHTML = '<p class="empty-state">Couldn\'t load circulars — check your connection and reload.</p>';
+        });
+    }
 
     /* ---------- CALENDAR ---------- */
     var calGrid = document.getElementById('calendar-grid');
@@ -1163,9 +1678,6 @@
         });
     });
 
-    loadTasks();
-    loadAuditLog();
-
     /* ---------- UPLOAD ---------- */
     var uploadForm = document.getElementById('upload-form');
     var uploadFileInput = document.getElementById('upload-file');
@@ -1286,6 +1798,379 @@
         });
     });
 
+    /* ---------- COMPANY PROFILE ---------- */
+    var profileForm = document.getElementById('profile-form');
+    var profileStatus = document.getElementById('profile-status');
+    var profileEntityName = document.getElementById('profile-entity-name');
+    var profileCustomerType = document.getElementById('profile-customer-type');
+    var profileCountries = document.getElementById('profile-countries');
+    document.getElementById('profile-scheme-grid').innerHTML = schemeGridHtml('profile');
+
+    function loadCompanyProfile(){
+      fetch(CONVEX_SITE_URL + '/company-profile', { headers: authHeaders() })
+        .then(function(res){ return res.json(); })
+        .then(function(profile){
+          if(!profile) return;
+          profileEntityName.value = profile.legalEntityName || '';
+          profileCustomerType.value = profile.customerType || 'Acquirer';
+          profileCountries.value = (profile.countries || []).join(', ');
+          document.querySelectorAll('.profile-scheme-check').forEach(function(el){
+            el.checked = (profile.schemes || []).indexOf(el.value) !== -1;
+          });
+        })
+        .catch(function(){ /* no profile saved yet — leave the form at its defaults */ });
+    }
+
+    profileForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var schemes = Array.from(document.querySelectorAll('.profile-scheme-check:checked')).map(function(el){ return el.value; });
+      var countries = profileCountries.value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+      var btn = profileForm.querySelector('button[type="submit"]');
+      var originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      profileStatus.className = 'upload-status';
+      profileStatus.textContent = '';
+
+      fetch(CONVEX_SITE_URL + '/company-profile', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          legalEntityName: profileEntityName.value,
+          customerType: profileCustomerType.value,
+          countries: countries,
+          schemes: schemes
+        })
+      })
+        .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'request failed'); return data; }); })
+        .then(function(){
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+          profileStatus.className = 'upload-status success';
+          profileStatus.textContent = 'Saved.';
+        })
+        .catch(function(err){
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+          profileStatus.className = 'upload-status error';
+          profileStatus.textContent = err.message || 'Something went wrong.';
+        });
+    });
+
+    /* ---------- PUBLICATIONS INBOX ---------- */
+    var inboxList = document.getElementById('inbox-list');
+
+    function renderRelevanceSection(c){
+      if(typeof c.appliesToCompany === 'boolean'){
+        var cls = c.appliesToCompany ? 'applies' : 'not-applies';
+        var label = c.appliesToCompany ? 'APPLIES TO YOU' : 'DOESN\'T APPLY';
+        return '' +
+          '<div class="relevance-section">' +
+            '<span class="relevance-pill ' + cls + '">' + label + '</span>' +
+            '<p class="relevance-reason">' + escapeHtml(c.applicabilityReason || '') + '</p>' +
+            '<button type="button" class="btn-recheck" data-id="' + c._id + '">Re-check</button>' +
+            (c.appliesToCompany
+              ? '<button type="button" class="btn-view-detail" data-detail-id="' + c._id + '">View obligations &amp; plan &rarr;</button>'
+              : '') +
+          '</div>';
+      }
+      return '' +
+        '<div class="relevance-section">' +
+          '<button type="button" class="btn-complete btn-check-relevance" data-id="' + c._id + '">Why this applies</button>' +
+        '</div>';
+    }
+
+    function renderInboxCard(c){
+      // Reuse the same card shell as renderCircular(), then append the
+      // relevance block just before the closing </div>.
+      var base = renderCircular(c);
+      return base.slice(0, -'</div>'.length) + renderRelevanceSection(c) + '</div>';
+    }
+
+    function loadInbox(){
+      fetch(CONVEX_SITE_URL + '/publications-inbox', { headers: authHeaders() })
+        .then(function(res){ return res.json(); })
+        .then(function(items){
+          inboxList.innerHTML = items.length
+            ? items.map(renderInboxCard).join('')
+            : '<p class="empty-state">No publications yet for the schemes in your company profile.</p>';
+        })
+        .catch(function(){
+          inboxList.innerHTML = '<p class="empty-state">Couldn\'t load the inbox — check your connection and try again.</p>';
+        });
+    }
+
+    inboxList.addEventListener('click', function(e){
+      var btn = e.target.closest('.btn-check-relevance, .btn-recheck');
+      if(!btn) return;
+      var circularId = btn.getAttribute('data-id');
+      btn.disabled = true;
+      btn.classList.remove('btn-error');
+      btn.textContent = 'Checking…';
+
+      fetch(CONVEX_SITE_URL + '/circulars/check-relevance', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ circularId: circularId })
+      })
+        .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'request failed'); return data; }); })
+        .then(function(){ return loadInbox(); })
+        .catch(function(err){
+          btn.disabled = false;
+          btn.classList.add('btn-error');
+          btn.title = err.message || 'Something went wrong checking relevance.';
+          btn.textContent = 'Couldn\'t check — retry';
+        });
+    });
+
+    inboxList.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-detail-id]');
+      if(!btn) return;
+      openCircularDetail(btn.getAttribute('data-detail-id'));
+    });
+
+    /* ---------- CIRCULAR DETAIL MODAL (obligations, plan, evidence, financial impact) ---------- */
+    var detailBackdrop = document.getElementById('detail-modal-backdrop');
+    var detailBody = document.getElementById('detail-modal-body');
+    var detailCloseBtn = document.getElementById('detail-modal-close');
+    var currentDetailCircularId = null;
+
+    function closeCircularDetail(){
+      detailBackdrop.classList.remove('open');
+      currentDetailCircularId = null;
+    }
+    detailCloseBtn.addEventListener('click', closeCircularDetail);
+    detailBackdrop.addEventListener('click', function(e){
+      if(e.target === detailBackdrop) closeCircularDetail();
+    });
+
+    function renderPlanItemRow(item){
+      var planItem = item.planItem;
+      var evidenceHtml;
+      if(planItem && planItem.signedOff){
+        var evidenceLabel = planItem.evidenceType === 'file'
+          ? (item.evidenceFileUrl ? '<a href="' + escapeHtml(item.evidenceFileUrl) + '" target="_blank" rel="noopener">View uploaded file &#8599;</a>' : 'Uploaded file')
+          : planItem.evidenceType === 'link'
+            ? '<a href="' + escapeHtml(planItem.evidenceContent || '') + '" target="_blank" rel="noopener">' + escapeHtml(planItem.evidenceContent || '') + '</a>'
+            : escapeHtml(planItem.evidenceContent || '');
+        evidenceHtml = '' +
+          '<div class="evidence-block">' +
+            '<span class="signed-off-badge">Signed off ' + new Date(planItem.signedOffAt).toLocaleDateString() + '</span>' +
+            '<div class="evidence-summary">' + evidenceLabel + '</div>' +
+          '</div>';
+      } else {
+        evidenceHtml = '' +
+          '<div class="evidence-block" data-plan-item-id="' + (planItem ? planItem._id : '') + '">' +
+            '<div class="evidence-type-row">' +
+              '<label><input type="radio" name="ev-type-' + planItem._id + '" value="note" checked /> Note</label>' +
+              '<label><input type="radio" name="ev-type-' + planItem._id + '" value="link" /> Link</label>' +
+              '<label><input type="radio" name="ev-type-' + planItem._id + '" value="file" /> File</label>' +
+            '</div>' +
+            '<div class="evidence-input-row">' +
+              '<input type="text" class="evidence-text-input" placeholder="Describe the evidence…" />' +
+              '<input type="file" class="evidence-file-input" style="display:none;" />' +
+              '<button type="button" class="btn-save-plan btn-submit-evidence" data-plan-item-id="' + planItem._id + '">Attach &amp; sign off</button>' +
+            '</div>' +
+          '</div>';
+      }
+
+      return '' +
+        '<div class="plan-item-row">' +
+          '<p class="plan-item-desc">' + escapeHtml(item.description) + '</p>' +
+          '<div class="plan-item-fields" data-plan-item-id="' + (planItem ? planItem._id : '') + '">' +
+            '<input type="text" class="plan-owner-input" placeholder="Owner" value="' + escapeHtml(planItem ? planItem.owner : 'Unassigned') + '" />' +
+            '<input type="text" class="plan-duedate-input" placeholder="Due date (YYYY-MM-DD)" value="' + escapeHtml(planItem && planItem.dueDate ? planItem.dueDate : '') + '" />' +
+            '<button type="button" class="btn-save-plan btn-save-plan-item" data-plan-item-id="' + (planItem ? planItem._id : '') + '">Save</button>' +
+          '</div>' +
+          evidenceHtml +
+        '</div>';
+    }
+
+    function renderDetailBody(data){
+      var c = data.circular;
+      var obligations = data.obligations;
+
+      var obligationsHtml;
+      if(obligations.length === 0){
+        obligationsHtml = '<button type="button" class="btn-complete" id="btn-extract-obligations">Extract obligations</button>';
+      } else {
+        obligationsHtml = obligations.map(renderPlanItemRow).join('');
+      }
+
+      var financialHtml = c.financialImpactSummary
+        ? '<p class="financial-impact-text">' + escapeHtml(c.financialImpactSummary) + '</p>'
+        : '<button type="button" class="btn-complete" id="btn-estimate-impact">Estimate financial impact</button>';
+
+      detailBody.innerHTML = '' +
+        '<div class="detail-scheme">' + escapeHtml((c.scheme || '').toUpperCase()) + '</div>' +
+        '<div class="detail-title">' + escapeHtml(c.title) + '</div>' +
+        '<div class="relevance-section" style="border-top:none; padding-top:0;">' +
+          '<span class="relevance-pill applies">APPLIES TO YOU</span>' +
+          '<p class="relevance-reason">' + escapeHtml(c.applicabilityReason || '') + '</p>' +
+        '</div>' +
+        '<div class="detail-section">' +
+          '<h3>Obligations &amp; implementation plan</h3>' +
+          obligationsHtml +
+        '</div>' +
+        '<div class="detail-section">' +
+          '<h3>Estimated financial impact</h3>' +
+          financialHtml +
+        '</div>';
+    }
+
+    function openCircularDetail(circularId){
+      currentDetailCircularId = circularId;
+      detailBody.innerHTML = '<p class="empty-state">Loading…</p>';
+      detailBackdrop.classList.add('open');
+      fetch(CONVEX_SITE_URL + '/circular-detail?circularId=' + encodeURIComponent(circularId), { headers: authHeaders() })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if(currentDetailCircularId !== circularId) return; // closed/changed before this resolved
+          renderDetailBody(data);
+        })
+        .catch(function(){
+          detailBody.innerHTML = '<p class="empty-state">Couldn\'t load this circular\'s details.</p>';
+        });
+    }
+
+    function refreshDetail(){
+      if(currentDetailCircularId) openCircularDetail(currentDetailCircularId);
+    }
+
+    detailBody.addEventListener('click', function(e){
+      var extractBtn = e.target.closest('#btn-extract-obligations');
+      if(extractBtn){
+        extractBtn.disabled = true;
+        extractBtn.textContent = 'Extracting…';
+        fetch(CONVEX_SITE_URL + '/circulars/extract-obligations', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ circularId: currentDetailCircularId })
+        })
+          .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'request failed'); return data; }); })
+          .then(function(){ refreshDetail(); })
+          .catch(function(err){
+            extractBtn.disabled = false;
+            extractBtn.textContent = 'Couldn\'t extract — retry';
+            extractBtn.title = err.message || '';
+          });
+        return;
+      }
+
+      var impactBtn = e.target.closest('#btn-estimate-impact');
+      if(impactBtn){
+        impactBtn.disabled = true;
+        impactBtn.textContent = 'Estimating…';
+        fetch(CONVEX_SITE_URL + '/circulars/estimate-financial-impact', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ circularId: currentDetailCircularId })
+        })
+          .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'request failed'); return data; }); })
+          .then(function(){ refreshDetail(); })
+          .catch(function(err){
+            impactBtn.disabled = false;
+            impactBtn.textContent = 'Couldn\'t estimate — retry';
+            impactBtn.title = err.message || '';
+          });
+        return;
+      }
+
+      var saveBtn = e.target.closest('.btn-save-plan-item');
+      if(saveBtn){
+        var fieldsRow = saveBtn.closest('.plan-item-fields');
+        var owner = fieldsRow.querySelector('.plan-owner-input').value.trim() || 'Unassigned';
+        var dueDate = fieldsRow.querySelector('.plan-duedate-input').value.trim();
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+        fetch(CONVEX_SITE_URL + '/plan-items/update', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ planItemId: saveBtn.getAttribute('data-plan-item-id'), owner: owner, dueDate: dueDate })
+        })
+          .then(function(res){ if(!res.ok) throw new Error('request failed'); return res.json(); })
+          .then(function(){
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Saved';
+            setTimeout(function(){ saveBtn.textContent = 'Save'; }, 1500);
+          })
+          .catch(function(){
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Couldn\'t save — retry';
+          });
+        return;
+      }
+
+      var evidenceBtn = e.target.closest('.btn-submit-evidence');
+      if(evidenceBtn){
+        var evidenceBlock = evidenceBtn.closest('.evidence-block');
+        var planItemId = evidenceBtn.getAttribute('data-plan-item-id');
+        var evidenceType = evidenceBlock.querySelector('input[type="radio"]:checked').value;
+        var textInput = evidenceBlock.querySelector('.evidence-text-input');
+        var fileInput = evidenceBlock.querySelector('.evidence-file-input');
+
+        evidenceBtn.disabled = true;
+        evidenceBtn.textContent = 'Saving…';
+
+        function finishSubmit(evidenceContent, evidenceFileId){
+          fetch(CONVEX_SITE_URL + '/plan-items/submit-evidence', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              planItemId: planItemId,
+              evidenceType: evidenceType,
+              evidenceContent: evidenceContent,
+              evidenceFileId: evidenceFileId
+            })
+          })
+            .then(function(res){ return res.json().then(function(data){ if(!res.ok) throw new Error(data.error || 'request failed'); return data; }); })
+            .then(function(){ refreshDetail(); })
+            .catch(function(err){
+              evidenceBtn.disabled = false;
+              evidenceBtn.textContent = 'Couldn\'t save — retry';
+              evidenceBtn.title = err.message || '';
+            });
+        }
+
+        if(evidenceType === 'file'){
+          var file = fileInput.files[0];
+          if(!file){
+            evidenceBtn.disabled = false;
+            evidenceBtn.textContent = 'Choose a file first';
+            return;
+          }
+          fetch(CONVEX_SITE_URL + '/plan-items/generate-upload-url', { method: 'POST' })
+            .then(function(res){ return res.json(); })
+            .then(function(data){
+              return fetch(data.uploadUrl, { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+            })
+            .then(function(uploadRes){ return uploadRes.json(); })
+            .then(function(uploadData){ finishSubmit(undefined, uploadData.storageId); })
+            .catch(function(){
+              evidenceBtn.disabled = false;
+              evidenceBtn.textContent = 'Upload failed — retry';
+            });
+        } else {
+          var content = textInput.value.trim();
+          if(!content){
+            evidenceBtn.disabled = false;
+            evidenceBtn.textContent = 'Enter evidence first';
+            return;
+          }
+          finishSubmit(content, undefined);
+        }
+      }
+    });
+
+    detailBody.addEventListener('change', function(e){
+      if(e.target.matches('.evidence-block input[type="radio"]')){
+        var block = e.target.closest('.evidence-block');
+        var isFile = e.target.value === 'file';
+        block.querySelector('.evidence-text-input').style.display = isFile ? 'none' : '';
+        block.querySelector('.evidence-file-input').style.display = isFile ? '' : 'none';
+      }
+    });
+
     /* ---------- CHAT ---------- */
     var chatToggle = document.getElementById('chat-toggle');
     var chatWidget = document.getElementById('chat-widget');
@@ -1345,6 +2230,16 @@
           addChatBubble('assistant', "Couldn't reach the assistant — check your connection and try again.", 'error');
         });
     });
+
+    function initApp(){
+      if(appInitialized) return;
+      appInitialized = true;
+      loadCirculars();
+      loadTasks();
+      loadAuditLog();
+      loadCompanyProfile();
+      loadInbox();
+    }
   })();
 </script>
 

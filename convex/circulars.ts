@@ -1,4 +1,4 @@
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { v } from "convex/values";
 import { TEAMS } from "./tasks";
 
@@ -45,6 +45,49 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("circulars").order("desc").take(50);
+  },
+});
+
+export const listForInbox = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("companyProfile")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .unique();
+    if (!profile) return [];
+
+    const recent = await ctx.db.query("circulars").order("desc").take(200);
+    const inScheme = recent.filter((c) => profile.schemes.includes(c.scheme));
+
+    const withVerdicts = await Promise.all(
+      inScheme.map(async (c) => {
+        const verdict = await ctx.db
+          .query("circularVerdicts")
+          .withIndex("by_user_and_circular", (q) =>
+            q.eq("userId", args.userId).eq("circularId", c._id)
+          )
+          .unique();
+        return {
+          ...c,
+          appliesToCompany: verdict?.appliesToCompany,
+          applicabilityReason: verdict?.applicabilityReason,
+          financialImpactSummary: verdict?.financialImpactSummary,
+        };
+      })
+    );
+
+    // "Doesn't apply" circulars are filtered out entirely — a verdict of
+    // exactly `false` hides it; undefined (not yet checked) or `true` (applies)
+    // both stay visible.
+    return withVerdicts.filter((c) => c.appliesToCompany !== false).slice(0, 50);
+  },
+});
+
+export const getById = internalQuery({
+  args: { circularId: v.id("circulars") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.circularId);
   },
 });
 

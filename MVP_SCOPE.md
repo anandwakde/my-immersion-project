@@ -1,4 +1,4 @@
-# MEA Payment Intelligence Monitor — V1 Scoping Document
+# Payment Scheme Intelligence Monitor — V1 Scoping Document
 
 ## 1. USER
 

@@ -198,6 +198,158 @@ export const runUnionPayPipeline = action({
   },
 });
 
+export const runOmanNetPipeline = action({
+  args: {},
+  handler: async (ctx): Promise<unknown> => {
+    const scanResult: { rawText: string; sourceUrl: string } = await ctx.runAction(
+      api.scanOmanNet.scanOmanNet,
+      {}
+    );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
+    const fields: {
+      title: string;
+      scheme: string;
+      urgency: string;
+      deadline: string;
+      deadlineDate: string | null;
+      scope: string;
+    } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
+
+    await ctx.runAction(api.ingest.ingestCircular, {
+      scheme: "OmanNet",
+      title: fields.title,
+      urgency: fields.urgency,
+      deadline: fields.deadline,
+      deadlineDate: fields.deadlineDate ?? null,
+      scope: fields.scope,
+      sourceUrl: scanResult.sourceUrl,
+    });
+
+    return { ...fields, scheme: "OmanNet" };
+  },
+});
+
+export const runUzcardPipeline = action({
+  args: {},
+  handler: async (ctx): Promise<unknown> => {
+    const scanResult: { rawText: string; sourceUrl: string } = await ctx.runAction(
+      api.scanUzcard.scanUzcard,
+      {}
+    );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
+    const fields: {
+      title: string;
+      scheme: string;
+      urgency: string;
+      deadline: string;
+      deadlineDate: string | null;
+      scope: string;
+    } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
+
+    await ctx.runAction(api.ingest.ingestCircular, {
+      scheme: "Uzcard",
+      title: fields.title,
+      urgency: fields.urgency,
+      deadline: fields.deadline,
+      deadlineDate: fields.deadlineDate ?? null,
+      scope: fields.scope,
+      sourceUrl: scanResult.sourceUrl,
+    });
+
+    return { ...fields, scheme: "Uzcard" };
+  },
+});
+
+export const runEpiWeroPipeline = action({
+  args: {},
+  handler: async (ctx): Promise<unknown> => {
+    const scanResult: { rawText: string; sourceUrl: string } = await ctx.runAction(
+      api.scanEpiWero.scanEpiWero,
+      {}
+    );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
+    const fields: {
+      title: string;
+      scheme: string;
+      urgency: string;
+      deadline: string;
+      deadlineDate: string | null;
+      scope: string;
+    } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
+
+    await ctx.runAction(api.ingest.ingestCircular, {
+      scheme: "EPI / Wero",
+      title: fields.title,
+      urgency: fields.urgency,
+      deadline: fields.deadline,
+      deadlineDate: fields.deadlineDate ?? null,
+      scope: fields.scope,
+      sourceUrl: scanResult.sourceUrl,
+    });
+
+    return { ...fields, scheme: "EPI / Wero" };
+  },
+});
+
+export const runUaeSwitchPipeline = action({
+  args: {},
+  handler: async (ctx): Promise<unknown> => {
+    const scanResult: { rawText: string; sourceUrl: string } = await ctx.runAction(
+      api.scanUaeSwitch.scanUaeSwitch,
+      {}
+    );
+
+    const existing: { title: string } | null = await ctx.runQuery(api.circulars.findBySourceUrl, {
+      sourceUrl: scanResult.sourceUrl,
+    });
+    if (existing) {
+      return { skipped: `already exists as "${existing.title}"` };
+    }
+
+    const fields: {
+      title: string;
+      scheme: string;
+      urgency: string;
+      deadline: string;
+      deadlineDate: string | null;
+      scope: string;
+    } = await ctx.runAction(api.extract.extractFields, { rawText: scanResult.rawText });
+
+    await ctx.runAction(api.ingest.ingestCircular, {
+      scheme: "UAESWITCH",
+      title: fields.title,
+      urgency: fields.urgency,
+      deadline: fields.deadline,
+      deadlineDate: fields.deadlineDate ?? null,
+      scope: fields.scope,
+      sourceUrl: scanResult.sourceUrl,
+    });
+
+    return { ...fields, scheme: "UAESWITCH" };
+  },
+});
+
 export const runKnetPipeline = action({
   args: {},
   handler: async (ctx): Promise<unknown> => {

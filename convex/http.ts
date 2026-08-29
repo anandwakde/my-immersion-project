@@ -7,7 +7,7 @@ import { Id } from "./_generated/dataModel";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Convex wraps thrown errors as "Uncaught Error: <message>\n    at handler (...)",
@@ -29,6 +29,137 @@ function cleanErrorMessage(err: unknown): string {
 }
 
 const http = httpRouter();
+
+async function requireUser(
+  ctx: Parameters<Parameters<typeof httpAction>[0]>[0],
+  request: Request
+): Promise<{ userId: Id<"users">; email: string; profile: unknown } | Response> {
+  const authHeader = request.headers.get("Authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) {
+    return new Response(JSON.stringify({ error: "Not logged in" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+  const session = await ctx.runQuery(api.auth.me, { token });
+  if (!session) {
+    return new Response(JSON.stringify({ error: "Session expired — please log in again" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+  return session;
+}
+
+http.route({
+  path: "/auth/signup",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    try {
+      const result = await ctx.runMutation(api.auth.signup, {
+        email: typeof body.email === "string" ? body.email : "",
+        password: typeof body.password === "string" ? body.password : "",
+        legalEntityName: typeof body.legalEntityName === "string" ? body.legalEntityName : "",
+        customerType: typeof body.customerType === "string" ? body.customerType : "",
+        countries: Array.isArray(body.countries) ? body.countries.filter((s: unknown) => typeof s === "string") : [],
+        schemes: Array.isArray(body.schemes) ? body.schemes.filter((s: unknown) => typeof s === "string") : [],
+      });
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/auth/signup",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/auth/login",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    try {
+      const result = await ctx.runMutation(api.auth.login, {
+        email: typeof body.email === "string" ? body.email : "",
+        password: typeof body.password === "string" ? body.password : "",
+      });
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/auth/login",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/auth/logout",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    const token = typeof body.token === "string" ? body.token : "";
+    if (token) await ctx.runMutation(api.auth.logout, { token });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/auth/logout",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/auth/me",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    return new Response(JSON.stringify(auth), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/auth/me",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
 
 http.route({
   path: "/submit-email",
@@ -327,6 +458,372 @@ http.route({
     } catch {
       return unsubscribePage("Couldn't process that unsubscribe link.");
     }
+  }),
+});
+
+http.route({
+  path: "/circulars/check-relevance",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const circularId = typeof body.circularId === "string" ? body.circularId : "";
+    if (!circularId) {
+      return new Response(JSON.stringify({ error: "Missing circularId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    try {
+      const result = await ctx.runAction(api.relevance.checkRelevance, {
+        userId: auth.userId,
+        circularId: circularId as Id<"circulars">,
+      });
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/circulars/check-relevance",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/circulars/extract-obligations",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const circularId = typeof body.circularId === "string" ? body.circularId : "";
+    if (!circularId) {
+      return new Response(JSON.stringify({ error: "Missing circularId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    try {
+      const result = await ctx.runAction(api.obligations.extractObligations, {
+        userId: auth.userId,
+        circularId: circularId as Id<"circulars">,
+      });
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/circulars/extract-obligations",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/circulars/estimate-financial-impact",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const circularId = typeof body.circularId === "string" ? body.circularId : "";
+    if (!circularId) {
+      return new Response(JSON.stringify({ error: "Missing circularId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    try {
+      const result = await ctx.runAction(api.obligations.estimateFinancialImpact, {
+        userId: auth.userId,
+        circularId: circularId as Id<"circulars">,
+      });
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/circulars/estimate-financial-impact",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/circular-detail",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const url = new URL(request.url);
+    const circularId = url.searchParams.get("circularId");
+    if (!circularId) {
+      return new Response(JSON.stringify({ error: "Missing circularId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const circular = await ctx.runQuery(internal.circulars.getById, {
+      circularId: circularId as Id<"circulars">,
+    });
+    if (!circular) {
+      return new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const verdict = await ctx.runQuery(internal.relevance.getVerdict, {
+      userId: auth.userId,
+      circularId: circularId as Id<"circulars">,
+    });
+    const obligations = await ctx.runQuery(api.obligationsData.listForCircular, {
+      userId: auth.userId,
+      circularId: circularId as Id<"circulars">,
+    });
+    const circularWithVerdict = {
+      ...circular,
+      appliesToCompany: verdict?.appliesToCompany,
+      applicabilityReason: verdict?.applicabilityReason,
+      financialImpactSummary: verdict?.financialImpactSummary,
+    };
+    return new Response(JSON.stringify({ circular: circularWithVerdict, obligations }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/circular-detail",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/plan-items/update",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const planItemId = typeof body.planItemId === "string" ? body.planItemId : "";
+    const owner = typeof body.owner === "string" ? body.owner : "";
+    const dueDate = typeof body.dueDate === "string" && body.dueDate ? body.dueDate : undefined;
+    if (!planItemId || !owner) {
+      return new Response(JSON.stringify({ error: "Missing planItemId or owner" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    try {
+      await ctx.runMutation(api.obligationsData.updatePlanItem, {
+        userId: auth.userId,
+        planItemId: planItemId as Id<"planItems">,
+        owner,
+        dueDate,
+      });
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/plan-items/update",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/plan-items/generate-upload-url",
+  method: "POST",
+  handler: httpAction(async (ctx) => {
+    const uploadUrl = await ctx.runMutation(api.obligationsData.generateEvidenceUploadUrl, {});
+    return new Response(JSON.stringify({ uploadUrl }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/plan-items/generate-upload-url",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/plan-items/submit-evidence",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const planItemId = typeof body.planItemId === "string" ? body.planItemId : "";
+    const evidenceType = body.evidenceType;
+    if (!planItemId || !["file", "link", "note"].includes(evidenceType)) {
+      return new Response(JSON.stringify({ error: "Missing planItemId or invalid evidenceType" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    try {
+      await ctx.runMutation(api.obligationsData.submitEvidence, {
+        userId: auth.userId,
+        planItemId: planItemId as Id<"planItems">,
+        evidenceType,
+        evidenceContent: typeof body.evidenceContent === "string" ? body.evidenceContent : undefined,
+        evidenceFileId:
+          typeof body.evidenceFileId === "string" ? (body.evidenceFileId as Id<"_storage">) : undefined,
+      });
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/plan-items/submit-evidence",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/publications-inbox",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const circulars = await ctx.runQuery(api.circulars.listForInbox, { userId: auth.userId });
+    const now = Date.now();
+    const withStatus = circulars
+      .map((c) => ({ ...c, status: computeStatus(c.urgency, c.deadlineDate, now) }))
+      .sort((a, b) => urgencySortPriority(a.urgency) - urgencySortPriority(b.urgency));
+    return new Response(JSON.stringify(withStatus), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/publications-inbox",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/company-profile",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const profile = await ctx.runQuery(api.companyProfile.get, { userId: auth.userId });
+    return new Response(JSON.stringify(profile), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }),
+});
+
+http.route({
+  path: "/company-profile",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await requireUser(ctx, request);
+    if (auth instanceof Response) return auth;
+    const body = await request.json();
+    const legalEntityName = typeof body.legalEntityName === "string" ? body.legalEntityName : "";
+    const customerType = typeof body.customerType === "string" ? body.customerType : "";
+    const countries = Array.isArray(body.countries)
+      ? body.countries.filter((s: unknown) => typeof s === "string")
+      : [];
+    const schemes = Array.isArray(body.schemes)
+      ? body.schemes.filter((s: unknown) => typeof s === "string")
+      : [];
+
+    try {
+      await ctx.runMutation(api.companyProfile.save, {
+        userId: auth.userId,
+        legalEntityName,
+        customerType,
+        countries,
+        schemes,
+      });
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: cleanErrorMessage(err) }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
+http.route({
+  path: "/company-profile",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
   }),
 });
 

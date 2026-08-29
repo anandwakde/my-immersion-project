@@ -4,7 +4,7 @@ import { v } from "convex/values";
 
 const DASHBOARD_URL = "https://pim.anandwakde.com/";
 const CONVEX_SITE_URL = "https://calculating-ptarmigan-789.convex.site";
-const FROM_ADDRESS = "MEA Payment Intelligence Monitor <alerts@updates.pim.anandwakde.com>";
+const FROM_ADDRESS = "Payment Scheme Intelligence Monitor <alerts@updates.pim.anandwakde.com>";
 
 function escapeHtml(str: string): string {
   return str

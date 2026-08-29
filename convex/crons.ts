@@ -30,6 +30,18 @@ crons.interval(
 
 crons.interval("scan knet circulars", { hours: 24 }, api.pipeline.runKnetPipeline, {});
 
+// OmanNet's cron is intentionally not registered: cbo.gov.om cannot be
+// reached from Convex's servers at the network/TLS level (works fine via a
+// normal browser/curl, fails with a bare "fetch failed" from Convex's Node
+// runtime) — a hosting-side issue, not something fixable in this code. The
+// scanner/pipeline are left in place in case that changes.
+
+crons.interval("scan uzcard circulars", { hours: 24 }, api.pipeline.runUzcardPipeline, {});
+
+crons.interval("scan epi/wero circulars", { hours: 24 }, api.pipeline.runEpiWeroPipeline, {});
+
+crons.interval("scan uaeswitch circulars", { hours: 24 }, api.pipeline.runUaeSwitchPipeline, {});
+
 // Re-checks a fixed list of known Cross-Border bulletin URLs. Dedups by
 // source URL, so this only picks up new bulletins once their URL is added
 // to the hardcoded list in scanMastercardArchive.ts — it does not discover
