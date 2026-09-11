@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useState } from "react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
@@ -30,6 +31,7 @@ export function JobApplications({
   const [shareExpiresAt, setShareExpiresAt] = useState<number | null>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
 
   if (selectedApplicationId) {
     return (
@@ -67,10 +69,18 @@ export function JobApplications({
             onClick={() => {
               setSharing(true);
               setCopied(false);
+              setShareError(null);
               createShareLink({ jobId })
                 .then(({ token, expiresAt }) => {
                   setShareUrl(`${window.location.origin}/client/${token}`);
                   setShareExpiresAt(expiresAt);
+                })
+                .catch((err) => {
+                  setShareError(
+                    err instanceof ConvexError && typeof err.data === "string"
+                      ? err.data
+                      : "Couldn't generate a link. Please try again.",
+                  );
                 })
                 .finally(() => setSharing(false));
             }}
@@ -78,6 +88,7 @@ export function JobApplications({
             {sharing ? "Generating..." : "Generate link"}
           </Button>
         </div>
+        {shareError && <p className="mt-2 text-sm text-destructive">{shareError}</p>}
         {shareUrl && (
           <div className="mt-3 flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -154,6 +165,21 @@ export function JobApplications({
                 </div>
                 {app.clientStatus === "rejected" && app.clientRejectionReason && (
                   <p className="mt-2 text-muted-foreground">Reason: {app.clientRejectionReason}</p>
+                )}
+                {app.clientStatus === "accepted" && app.interviewSlotAt && (
+                  <p className="mt-2 text-muted-foreground">
+                    Proposed slot{app.interviewSlotAt2 ? "s" : ""}:{" "}
+                    {new Date(app.interviewSlotAt).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                    {app.interviewSlotAt2 &&
+                      `, or ${new Date(app.interviewSlotAt2).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}`}
+                    {app.interviewSlotTimezone && ` (client's timezone: ${app.interviewSlotTimezone})`}
+                  </p>
                 )}
               </li>
             ))}

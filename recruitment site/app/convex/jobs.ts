@@ -40,18 +40,24 @@ export const create = mutation({
   },
 });
 
-export const listMine = query({
+// Every recruiter (any signed-in account) manages every job, not just the
+// ones they personally posted — this is a shared team inbox, not per-user.
+export const listAll = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return [];
     }
-    return await ctx.db
-      .query("jobs")
-      .withIndex("by_createdBy", (q) => q.eq("createdBy", userId))
-      .order("desc")
-      .take(50);
+    return await ctx.db.query("jobs").order("desc").take(50);
+  },
+});
+
+export const listPublished = query({
+  args: {},
+  handler: async (ctx) => {
+    const jobs = await ctx.db.query("jobs").order("desc").take(100);
+    return jobs.filter((job) => job.status === "published");
   },
 });
 

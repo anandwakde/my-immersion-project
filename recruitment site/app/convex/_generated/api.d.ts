@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as netlinkConvert from "../netlinkConvert.js";
+import type * as recruiterAuth from "../recruiterAuth.js";
 import type * as shareLinks from "../shareLinks.js";
 
 import type {
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   jobs: typeof jobs;
   netlinkConvert: typeof netlinkConvert;
+  recruiterAuth: typeof recruiterAuth;
   shareLinks: typeof shareLinks;
 }>;
 

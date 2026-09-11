@@ -64,12 +64,9 @@ export const create = mutation({
 export const listForJob = query({
   args: { jobId: v.id("jobs") },
   handler: async (ctx, args) => {
+    // Any signed-in recruiter can see any job's applicants — see listAll in jobs.ts.
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
-      return [];
-    }
-    const job = await ctx.db.get("jobs", args.jobId);
-    if (job === null || job.createdBy !== userId) {
       return [];
     }
     return await ctx.db
@@ -83,16 +80,13 @@ export const listForJob = query({
 export const get = query({
   args: { applicationId: v.id("applications") },
   handler: async (ctx, args) => {
+    // Any signed-in recruiter can see any application — see listAll in jobs.ts.
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return null;
     }
     const application = await ctx.db.get("applications", args.applicationId);
     if (application === null) {
-      return null;
-    }
-    const job = await ctx.db.get("jobs", application.jobId);
-    if (job === null || job.createdBy !== userId) {
       return null;
     }
     const resumeUrl = await ctx.storage.getUrl(application.resumeStorageId);
@@ -114,16 +108,13 @@ export const getForConvert = internalQuery({
     }),
   ),
   handler: async (ctx, args) => {
+    // Any signed-in recruiter can convert any application — see listAll in jobs.ts.
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return null;
     }
     const application = await ctx.db.get("applications", args.applicationId);
     if (application === null) {
-      return null;
-    }
-    const job = await ctx.db.get("jobs", application.jobId);
-    if (job === null || job.createdBy !== userId) {
       return null;
     }
     const resumeMeta = await ctx.db.system.get("_storage", application.resumeStorageId);
@@ -155,16 +146,13 @@ export const setStatus = mutation({
     status: v.union(v.literal("new"), v.literal("shortlisted"), v.literal("rejected")),
   },
   handler: async (ctx, args) => {
+    // Any signed-in recruiter can update any application — see listAll in jobs.ts.
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       throw new ConvexError("Must be signed in.");
     }
     const application = await ctx.db.get("applications", args.applicationId);
     if (application === null) {
-      throw new ConvexError("Application not found.");
-    }
-    const job = await ctx.db.get("jobs", application.jobId);
-    if (job === null || job.createdBy !== userId) {
       throw new ConvexError("Application not found.");
     }
     await ctx.db.patch("applications", args.applicationId, { status: args.status });

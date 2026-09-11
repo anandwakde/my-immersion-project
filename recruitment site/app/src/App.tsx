@@ -1,7 +1,9 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useState } from "react";
 import { CreateJob } from "@/CreateJob";
 import { SignIn } from "@/SignIn";
+import { JobsListing } from "@/JobsListing";
 import { PublicJobPage } from "@/PublicJobPage";
 import { ClientReviewPage } from "@/ClientReviewPage";
 import { ClientResumeViewPage } from "@/ClientResumeViewPage";
@@ -15,6 +17,25 @@ function SignOutAction() {
     <Button variant="outline" onClick={() => void signOut()}>
       Sign out
     </Button>
+  );
+}
+
+function RecruiterArea({ onBackToJobs }: { onBackToJobs: () => void }) {
+  return (
+    <>
+      <AuthLoading>
+        <AppHeader />
+        <div className="px-6 py-16 text-center text-sm text-muted-foreground">Loading...</div>
+      </AuthLoading>
+      <Unauthenticated>
+        <AppHeader />
+        <SignIn onBackToJobs={onBackToJobs} />
+      </Unauthenticated>
+      <Authenticated>
+        <AppHeader action={<SignOutAction />} />
+        <CreateJob />
+      </Authenticated>
+    </>
   );
 }
 
@@ -52,20 +73,32 @@ export default function App() {
     );
   }
 
+  return <Landing />;
+}
+
+function Landing() {
+  const [showRecruiter, setShowRecruiter] = useState(
+    () => window.location.pathname.replace(/\/$/, "") === "/recruiter"
+  );
+
+  function goToRecruiter() {
+    window.history.pushState({}, "", "/recruiter");
+    setShowRecruiter(true);
+  }
+
+  function goToJobs() {
+    window.history.pushState({}, "", "/");
+    setShowRecruiter(false);
+  }
+
+  if (showRecruiter) {
+    return <RecruiterArea onBackToJobs={goToJobs} />;
+  }
+
   return (
     <>
-      <AuthLoading>
-        <AppHeader />
-        <div className="px-6 py-16 text-center text-sm text-muted-foreground">Loading...</div>
-      </AuthLoading>
-      <Unauthenticated>
-        <AppHeader />
-        <SignIn />
-      </Unauthenticated>
-      <Authenticated>
-        <AppHeader action={<SignOutAction />} />
-        <CreateJob />
-      </Authenticated>
+      <AppHeader />
+      <JobsListing onRecruiterClick={goToRecruiter} />
     </>
   );
 }

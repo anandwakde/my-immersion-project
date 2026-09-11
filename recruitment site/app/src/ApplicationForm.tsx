@@ -13,6 +13,20 @@ const ALLOWED_RESUME_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 const MAX_RESUME_BYTES = 5 * 1024 * 1024;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateName(value: string): string | null {
+  return value.trim().length >= 2 ? null : "Please enter your full name.";
+}
+
+function validateEmail(value: string): string | null {
+  return EMAIL_PATTERN.test(value.trim()) ? null : "Please enter a valid email address.";
+}
+
+function validatePhone(value: string): string | null {
+  const digitCount = (value.match(/\d/g) ?? []).length;
+  return digitCount >= 7 && digitCount <= 15 ? null : "Please enter a valid phone number.";
+}
 
 export function ApplicationForm({
   jobId,
@@ -28,6 +42,9 @@ export function ApplicationForm({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,8 +56,18 @@ export function ApplicationForm({
         e.preventDefault();
         setSubmitError(null);
 
+        const nextNameError = validateName(name);
+        const nextEmailError = validateEmail(email);
+        const nextPhoneError = validatePhone(phone);
+        setNameError(nextNameError);
+        setEmailError(nextEmailError);
+        setPhoneError(nextPhoneError);
+
         if (!resumeFile) {
           setFileError("Please attach your resume.");
+        }
+
+        if (nextNameError || nextEmailError || nextPhoneError || !resumeFile) {
           return;
         }
 
@@ -81,16 +108,48 @@ export function ApplicationForm({
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Full name</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (nameError) setNameError(null);
+          }}
+          aria-invalid={!!nameError}
+          required
+        />
+        {nameError && <p className="text-sm text-destructive">{nameError}</p>}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError(null);
+            }}
+            aria-invalid={!!emailError}
+            required
+          />
+          {emailError && <p className="text-sm text-destructive">{emailError}</p>}
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              if (phoneError) setPhoneError(null);
+            }}
+            aria-invalid={!!phoneError}
+            required
+          />
+          {phoneError && <p className="text-sm text-destructive">{phoneError}</p>}
         </div>
       </div>
       <div className="flex flex-col gap-1.5">

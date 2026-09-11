@@ -10,7 +10,7 @@ import { JobApplications } from "@/JobApplications";
 
 export function CreateJob() {
   const createJob = useMutation(api.jobs.create);
-  const myJobs = useQuery(api.jobs.listMine);
+  const allJobs = useQuery(api.jobs.listAll);
   const [selectedJob, setSelectedJob] = useState<{ id: Id<"jobs">; title: string } | null>(null);
 
   const [title, setTitle] = useState("");
@@ -103,9 +103,9 @@ export function CreateJob() {
       )}
 
       <div className="mt-12">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">Your jobs</h2>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">All jobs</h2>
         <ul className="mt-4 flex flex-col gap-3">
-          {myJobs?.map((job) => (
+          {allJobs?.map((job) => (
             <li key={job._id} className="rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-semibold text-foreground">{job.title}</div>
@@ -122,7 +122,7 @@ export function CreateJob() {
               </a>
             </li>
           ))}
-          {myJobs?.length === 0 && (
+          {allJobs?.length === 0 && (
             <li className="text-sm text-muted-foreground">No jobs posted yet.</li>
           )}
         </ul>

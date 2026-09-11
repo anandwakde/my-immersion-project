@@ -5,8 +5,42 @@ import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// <input type="datetime-local"> takes/returns "YYYY-MM-DDTHH:mm" in whatever
+// timezone the browser is set to — exactly the client's own local time, no
+// conversion needed. This just formats "now" into that same shape, so it can
+// be used as the picker's `min` (block picking a slot in the past).
+function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatSlot(atMs: number, timezone: string | null): string {
+  const formatted = new Date(atMs).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return timezone ? `${formatted} (${timezone})` : formatted;
+}
+
+// Applications accepted before the two-slot change only have interviewSlotAt
+// set — interviewSlotAt2 is undefined for those, not a bug.
+function formatSlots(atMs: number, atMs2: number | null, timezone: string | null): string {
+  const first = formatSlot(atMs, timezone);
+  return atMs2 === null ? first : `${first}, or ${new Date(atMs2).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`;
+}
 
 export function ClientReviewPage({ token }: { token: string }) {
   const data = useQuery(api.shareLinks.getByToken, { token });
@@ -17,6 +51,12 @@ export function ClientReviewPage({ token }: { token: string }) {
   const [submittingId, setSubmittingId] = useState<Id<"applications"> | null>(null);
   const [downloadingId, setDownloadingId] = useState<Id<"applications"> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [acceptTarget, setAcceptTarget] = useState<{ applicationId: Id<"applications">; label: string } | null>(
+    null,
+  );
+  const [slotValue, setSlotValue] = useState("");
+  const [slotValue2, setSlotValue2] = useState("");
+  const [slotError, setSlotError] = useState<string | null>(null);
 
   if (data === undefined) {
     return <div className="px-6 py-16 text-center text-sm text-muted-foreground">Loading...</div>;
@@ -43,7 +83,7 @@ export function ClientReviewPage({ token }: { token: string }) {
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = `${label}-resume.docx`;
+      link.download = `${label}-resume.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -53,10 +93,47 @@ export function ClientReviewPage({ token }: { token: string }) {
     }
   }
 
-  function accept(applicationId: Id<"applications">) {
+  function openAcceptDialog(applicationId: Id<"applications">, label: string) {
     setError(null);
-    setSubmittingId(applicationId);
-    submitFeedback({ token, applicationId, status: "accepted" })
+    setSlotError(null);
+    setSlotValue("");
+    setSlotValue2("");
+    setAcceptTarget({ applicationId, label });
+  }
+
+  function confirmAccept() {
+    if (!acceptTarget) return;
+    if (!slotValue || !slotValue2) {
+      setSlotError("Please pick two interview slots.");
+      return;
+    }
+    const slotDate = new Date(slotValue);
+    const slotDate2 = new Date(slotValue2);
+    if (Number.isNaN(slotDate.getTime()) || slotDate.getTime() <= Date.now()) {
+      setSlotError("Slot 1 must be a date and time in the future.");
+      return;
+    }
+    if (Number.isNaN(slotDate2.getTime()) || slotDate2.getTime() <= Date.now()) {
+      setSlotError("Slot 2 must be a date and time in the future.");
+      return;
+    }
+    if (slotDate.getTime() === slotDate2.getTime()) {
+      setSlotError("Please pick two different slots.");
+      return;
+    }
+
+    setSlotError(null);
+    setError(null);
+    setSubmittingId(acceptTarget.applicationId);
+    submitFeedback({
+      token,
+      applicationId: acceptTarget.applicationId,
+      status: "accepted",
+      interviewSlotAt: slotDate.getTime(),
+      interviewSlotAt2: slotDate2.getTime(),
+      interviewSlotTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    })
+      .then(() => setAcceptTarget(null))
       .catch((err) => {
         setError(err instanceof ConvexError && typeof err.data === "string" ? err.data : "Something went wrong.");
       })
@@ -101,6 +178,13 @@ export function ClientReviewPage({ token }: { token: string }) {
               <p className="mt-2 text-muted-foreground">Reason: {c.clientRejectionReason}</p>
             )}
 
+            {c.clientStatus === "accepted" && c.interviewSlotAt && (
+              <p className="mt-2 text-muted-foreground">
+                Proposed slot{c.interviewSlotAt2 ? "s" : ""}:{" "}
+                {formatSlots(c.interviewSlotAt, c.interviewSlotAt2, c.interviewSlotTimezone)}
+              </p>
+            )}
+
             {c.resumeUrl && (
               <div className="mt-3">
                 <p className="text-muted-foreground">Resume of the candidate</p>
@@ -127,7 +211,11 @@ export function ClientReviewPage({ token }: { token: string }) {
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button size="sm" disabled={submittingId === c.applicationId} onClick={() => accept(c.applicationId)}>
+              <Button
+                size="sm"
+                disabled={submittingId === c.applicationId}
+                onClick={() => openAcceptDialog(c.applicationId, c.label)}
+              >
                 Accept
               </Button>
               <Button
@@ -170,6 +258,61 @@ export function ClientReviewPage({ token }: { token: string }) {
       </ul>
 
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+
+      <Dialog open={acceptTarget !== null} onOpenChange={(open) => !open && setAcceptTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pick two interview slots</DialogTitle>
+            <DialogDescription>
+              {acceptTarget &&
+                `Offer two date and time options for ${acceptTarget.label}'s interview, in your local time.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="interview-slot-1">Slot 1</Label>
+              <Input
+                id="interview-slot-1"
+                type="datetime-local"
+                value={slotValue}
+                min={toDatetimeLocalValue(new Date())}
+                onChange={(e) => {
+                  setSlotValue(e.target.value);
+                  if (slotError) setSlotError(null);
+                }}
+                aria-invalid={!!slotError}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="interview-slot-2">Slot 2</Label>
+              <Input
+                id="interview-slot-2"
+                type="datetime-local"
+                value={slotValue2}
+                min={toDatetimeLocalValue(new Date())}
+                onChange={(e) => {
+                  setSlotValue2(e.target.value);
+                  if (slotError) setSlotError(null);
+                }}
+                aria-invalid={!!slotError}
+              />
+            </div>
+            {slotError && <p className="text-sm text-destructive">{slotError}</p>}
+          </div>
+
+          <DialogFooter>
+            <Button
+              disabled={acceptTarget !== null && submittingId === acceptTarget.applicationId}
+              onClick={confirmAccept}
+            >
+              {acceptTarget !== null && submittingId === acceptTarget.applicationId
+                ? "Confirming..."
+                : "Confirm & accept"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

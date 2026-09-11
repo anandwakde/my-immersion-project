@@ -93,6 +93,33 @@ export function ApplicationDetail({
             )}
           </dl>
 
+          {application.clientStatus === "accepted" && application.interviewSlotAt && (
+            <div className="rounded-lg border border-primary/20 bg-accent p-4 text-sm">
+              <p className="font-medium text-accent-foreground">
+                Client accepted — {application.interviewSlotAt2 ? "two slots" : "an interview slot"} proposed
+              </p>
+              <p className="mt-1 text-accent-foreground">
+                {new Date(application.interviewSlotAt).toLocaleString(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+                {application.interviewSlotAt2 &&
+                  `, or ${new Date(application.interviewSlotAt2).toLocaleString(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}`}
+                {application.interviewSlotTimezone && ` (client's timezone: ${application.interviewSlotTimezone})`}
+              </p>
+            </div>
+          )}
+
+          {application.clientStatus === "rejected" && application.clientRejectionReason && (
+            <div className="rounded-lg border border-border bg-background p-4 text-sm">
+              <p className="font-medium text-foreground">Client rejected this candidate</p>
+              <p className="mt-1 text-muted-foreground">Reason: {application.clientRejectionReason}</p>
+            </div>
+          )}
+
           {application.resumeUrl ? (
             <a
               href={application.resumeUrl}
@@ -135,7 +162,7 @@ export function ApplicationDetail({
                 onClick={() =>
                   downloadNetlinkResume(
                     application.netlinkResumeUrl!,
-                    application.netlinkResumeFileName ?? "Netlink-CV.docx",
+                    application.netlinkResumeFileName ?? "Netlink-CV.pdf",
                   )
                 }
               >

@@ -15,8 +15,9 @@ export const create = mutation({
     if (userId === null) {
       throw new ConvexError("Must be signed in.");
     }
+    // Any signed-in recruiter can share any job — see listAll in jobs.ts.
     const job = await ctx.db.get("jobs", args.jobId);
-    if (job === null || job.createdBy !== userId) {
+    if (job === null) {
       throw new ConvexError("Job not found.");
     }
 
@@ -70,10 +71,13 @@ export const getByToken = query({
       const resumeUrl = await ctx.storage.getUrl(app.netlinkResumeStorageId);
       candidates.push({
         applicationId: app._id,
-        label: app.netlinkResumeFileName?.replace(/\.docx$/i, "") ?? "Candidate",
+        label: app.netlinkResumeFileName?.replace(/\.pdf$/i, "") ?? "Candidate",
         resumeUrl,
         clientStatus: app.clientStatus ?? null,
         clientRejectionReason: app.clientRejectionReason ?? null,
+        interviewSlotAt: app.interviewSlotAt ?? null,
+        interviewSlotAt2: app.interviewSlotAt2 ?? null,
+        interviewSlotTimezone: app.interviewSlotTimezone ?? null,
       });
     }
 
@@ -91,6 +95,9 @@ export const submitFeedback = mutation({
     applicationId: v.id("applications"),
     status: v.union(v.literal("accepted"), v.literal("rejected")),
     reason: v.optional(v.string()),
+    interviewSlotAt: v.optional(v.number()),
+    interviewSlotAt2: v.optional(v.number()),
+    interviewSlotTimezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const link = await ctx.db
@@ -120,10 +127,22 @@ export const submitFeedback = mutation({
         clientRespondedAt: Date.now(),
       });
     } else {
+      if (args.interviewSlotAt === undefined || args.interviewSlotAt2 === undefined) {
+        throw new ConvexError("Please pick two interview slots before accepting.");
+      }
+      if (args.interviewSlotAt <= Date.now() || args.interviewSlotAt2 <= Date.now()) {
+        throw new ConvexError("Please pick interview slots that are in the future.");
+      }
+      if (args.interviewSlotAt === args.interviewSlotAt2) {
+        throw new ConvexError("Please pick two different interview slots.");
+      }
       await ctx.db.patch("applications", args.applicationId, {
         clientStatus: "accepted",
         clientRejectionReason: undefined,
         clientRespondedAt: Date.now(),
+        interviewSlotAt: args.interviewSlotAt,
+        interviewSlotAt2: args.interviewSlotAt2,
+        interviewSlotTimezone: args.interviewSlotTimezone,
       });
     }
   },
