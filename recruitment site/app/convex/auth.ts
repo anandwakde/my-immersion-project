@@ -18,6 +18,11 @@ const ResendPasswordReset = Email({
     return String(bytes[0] % 1_000_000).padStart(6, "0");
   },
   async sendVerificationRequest({ identifier: email, token }) {
+    if (env.EMAIL_MODE === "log") {
+      // Test mode: nothing is sent; the code is printed to the Convex logs.
+      console.log(`[EMAIL_MODE=log] Password reset code for ${email}: ${token}`);
+      return;
+    }
     const apiKey = env.RESEND_API_KEY;
     if (!apiKey) {
       console.error("Password reset email skipped — RESEND_API_KEY is not set on this deployment.");

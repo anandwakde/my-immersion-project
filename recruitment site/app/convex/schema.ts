@@ -74,6 +74,10 @@ export default defineSchema({
     // buildSearchText in candidates.ts) so Milestone 5's search index has a
     // single field to search across all three.
     searchText: v.optional(v.string()),
+    // Ticked by the candidate on the application form: may Netlink contact
+    // them about other roles (the recruiter "Invite to apply" feature).
+    contactConsent: v.optional(v.boolean()),
+    contactConsentAt: v.optional(v.number()),
   })
     .index("by_email", ["email"])
     .searchIndex("search_candidates", { searchField: "searchText" }),
@@ -106,8 +110,28 @@ export default defineSchema({
     interviewSlotAt: v.optional(v.number()),
     interviewSlotAt2: v.optional(v.number()),
     interviewSlotTimezone: v.optional(v.string()),
+    // Interview scheduling. The client proposes two slots (above); the
+    // candidate picks one via a no-login link keyed by interviewToken.
+    interviewStatus: v.optional(
+      v.union(
+        v.literal("awaiting_candidate"),
+        v.literal("confirmed"),
+        v.literal("needs_new_slots"),
+        v.literal("cancelled"),
+      ),
+    ),
+    interviewAt: v.optional(v.number()),
+    interviewToken: v.optional(v.string()),
+    candidateSlotNote: v.optional(v.string()),
+    meetingLink: v.optional(v.string()),
+    // Bumped on every change to a confirmed interview so calendar apps
+    // replace the earlier invite instead of adding a second event.
+    interviewSequence: v.optional(v.number()),
+    hiredAt: v.optional(v.number()),
   })
     .index("by_jobId", ["jobId"])
+    .index("by_candidateId", ["candidateId"])
+    .index("by_interviewToken", ["interviewToken"])
     .index("by_jobId_and_candidateId", ["jobId", "candidateId"]),
 
   // Populated by AI matching (Milestone 3). Empty/unused until then.
@@ -138,6 +162,9 @@ export default defineSchema({
     token: v.string(),
     expiresAt: v.number(),
     createdBy: v.id("users"),
+    // Optional — when set, the client is emailed the review link and gets
+    // interview invites and hiring updates.
+    clientEmail: v.optional(v.string()),
   })
     .index("by_token", ["token"])
     .index("by_jobId", ["jobId"]),
@@ -152,4 +179,78 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_approvalToken", ["approvalToken"]),
+
+  // Every email the app sends (or, with EMAIL_MODE=log, would have sent),
+  // shown to recruiters on the Email log page. Bodies of sign-in code
+  // emails are never stored.
+  emailLog: defineTable({
+    to: v.string(),
+    subject: v.string(),
+    kind: v.string(),
+    html: v.optional(v.string()),
+    hasAttachment: v.boolean(),
+    status: v.union(v.literal("sent"), v.literal("failed"), v.literal("logged")),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_createdAt", ["createdAt"]),
+
+  // In-app bell notifications, one row per recruiter per event.
+  notifications: defineTable({
+    userId: v.id("users"),
+    title: v.string(),
+    body: v.string(),
+    link: v.string(),
+    createdAt: v.number(),
+    read: v.boolean(),
+  })
+    .index("by_userId_and_createdAt", ["userId", "createdAt"])
+    .index("by_userId_and_read", ["userId", "read"]),
+
+  // "Invite to apply" sent from a candidate's profile.
+  invites: defineTable({
+    candidateId: v.id("candidates"),
+    jobId: v.id("jobs"),
+    invitedBy: v.id("users"),
+    message: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_candidateId", ["candidateId"])
+    .index("by_jobId", ["jobId"]),
+
+  // AI fit scores for a candidate against a job they have NOT applied to
+  // (computed on demand in the invite pop-up). Scores for jobs they did
+  // apply to live in `matches`.
+  candidateJobScores: defineTable({
+    candidateId: v.id("candidates"),
+    jobId: v.id("jobs"),
+    score: v.number(),
+    evidence: v.string(),
+    computedAt: v.number(),
+  }).index("by_candidateId_and_jobId", ["candidateId", "jobId"]),
+
+  // Recruiter <-> candidate chat, one thread per candidate.
+  messages: defineTable({
+    candidateId: v.id("candidates"),
+    sender: v.union(v.literal("recruiter"), v.literal("candidate")),
+    senderUserId: v.optional(v.id("users")),
+    body: v.string(),
+    createdAt: v.number(),
+  }).index("by_candidateId_and_createdAt", ["candidateId", "createdAt"]),
+
+  // Candidate portal sign-in: a 6-digit code emailed to the address they
+  // applied with, exchanged for a session token. Candidates never get a
+  // Convex Auth session, so they can't reach any recruiter-only function.
+  candidateLoginCodes: defineTable({
+    email: v.string(),
+    codeHash: v.string(),
+    expiresAt: v.number(),
+    attempts: v.number(),
+    createdAt: v.number(),
+  }).index("by_email_and_createdAt", ["email", "createdAt"]),
+
+  candidateSessions: defineTable({
+    candidateId: v.id("candidates"),
+    tokenHash: v.string(),
+    expiresAt: v.number(),
+  }).index("by_tokenHash", ["tokenHash"]),
 });

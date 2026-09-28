@@ -6,6 +6,9 @@ import { Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CandidateProfile } from "@/CandidateProfile";
+import { InterviewPanel } from "@/InterviewPanel";
+import { HireDialog, RejectDialog } from "@/DecisionDialogs";
+import { Link } from "@/lib/Link";
 
 const STAGE_LABEL: Record<string, string> = {
   applied: "Applied",
@@ -37,6 +40,8 @@ export function ApplicationDetail({
   const [noteText, setNoteText] = useState("");
   const [addingNote, setAddingNote] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
+  const [hireOpen, setHireOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
 
   async function downloadNetlinkResume(url: string, fileName: string) {
     setDownloading(true);
@@ -74,7 +79,12 @@ export function ApplicationDetail({
         <div className="mt-6 flex flex-col gap-6 rounded-lg border border-border bg-card p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{application.name}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+                <Link href={`/recruiter/candidates/${application.candidateId}`} className="hover:underline">
+                  {application.name}
+                </Link>
+              </h1>
+              <p className="text-sm text-muted-foreground">{application.jobTitle}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Applied {new Date(application._creationTime).toLocaleString()}
               </p>
@@ -112,25 +122,23 @@ export function ApplicationDetail({
             )}
           </dl>
 
-          {application.clientStatus === "accepted" && application.interviewSlotAt && (
-            <div className="rounded-lg border border-primary/20 bg-accent p-4 text-sm">
-              <p className="font-medium text-accent-foreground">
-                Client accepted — {application.interviewSlotAt2 ? "two slots" : "an interview slot"} proposed
-              </p>
-              <p className="mt-1 text-accent-foreground">
-                {new Date(application.interviewSlotAt).toLocaleString(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
-                {application.interviewSlotAt2 &&
-                  `, or ${new Date(application.interviewSlotAt2).toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}`}
-                {application.interviewSlotTimezone && ` (client's timezone: ${application.interviewSlotTimezone})`}
-              </p>
-            </div>
-          )}
+          {!application.rejected &&
+            (application.interviewStatus !== undefined ||
+              application.clientStatus === "accepted" ||
+              ["shortlisted", "interview", "offer"].includes(application.stage)) && (
+              <InterviewPanel
+                applicationId={applicationId}
+                clientStatus={application.clientStatus}
+                interviewStatus={application.interviewStatus}
+                interviewAt={application.interviewAt}
+                interviewSlotAt={application.interviewSlotAt}
+                interviewSlotAt2={application.interviewSlotAt2}
+                interviewSlotTimezone={application.interviewSlotTimezone}
+                candidateSlotNote={application.candidateSlotNote}
+                meetingLink={application.meetingLink}
+                interviewToken={application.interviewToken}
+              />
+            )}
 
           {application.clientStatus === "rejected" && application.clientRejectionReason && (
             <div className="rounded-lg border border-border bg-background p-4 text-sm">
@@ -196,9 +204,12 @@ export function ApplicationDetail({
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button
-              disabled={updating || (application.stage === "shortlisted" && !application.rejected)}
+              disabled={
+                updating ||
+                (["shortlisted", "interview", "offer", "hired"].includes(application.stage) && !application.rejected)
+              }
               onClick={() => {
                 setUpdating(true);
                 // Shortlisting supersedes a prior rejection — otherwise the
@@ -210,19 +221,34 @@ export function ApplicationDetail({
                 ]).finally(() => setUpdating(false));
               }}
             >
-              {application.stage === "shortlisted" && !application.rejected ? "Shortlisted" : "Shortlist"}
+              {["shortlisted", "interview", "offer", "hired"].includes(application.stage) && !application.rejected
+                ? "Shortlisted ✓"
+                : "Shortlist"}
+            </Button>
+            <Button variant="outline" disabled={updating || application.rejected} onClick={() => setRejectOpen(true)}>
+              {application.rejected ? "Rejected" : "Reject"}
             </Button>
             <Button
               variant="outline"
-              disabled={updating || application.rejected}
-              onClick={() => {
-                setUpdating(true);
-                setRejected({ applicationId, rejected: true }).finally(() => setUpdating(false));
-              }}
+              disabled={updating || application.stage === "hired"}
+              onClick={() => setHireOpen(true)}
             >
-              Reject
+              {application.stage === "hired" ? "Hired" : "Mark as hired"}
             </Button>
           </div>
+          <HireDialog
+            applicationId={applicationId}
+            candidateName={application.name}
+            jobTitle={application.jobTitle}
+            open={hireOpen}
+            onOpenChange={setHireOpen}
+          />
+          <RejectDialog
+            applicationId={applicationId}
+            candidateName={application.name}
+            open={rejectOpen}
+            onOpenChange={setRejectOpen}
+          />
         </div>
       )}
 

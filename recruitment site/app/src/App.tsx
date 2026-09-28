@@ -6,6 +6,8 @@ import { ClientReviewPage } from "@/ClientReviewPage";
 import { ClientResumeViewPage } from "@/ClientResumeViewPage";
 import { AppHeader } from "@/AppHeader";
 import { RecruiterArea } from "@/RecruiterArea";
+import { InterviewPage } from "@/InterviewPage";
+import { CandidatePortal } from "@/CandidatePortal";
 import { navigate, usePathname } from "@/lib/router";
 import { Id } from "../convex/_generated/dataModel";
 
@@ -31,6 +33,25 @@ export default function App() {
 
   if (pathname === "/recruiter" || pathname.startsWith("/recruiter/")) {
     return <RecruiterGate pathname={pathname.replace(/\/$/, "")} />;
+  }
+
+  const interviewMatch = pathname.match(/^\/interview\/([^/]+)\/?$/);
+  if (interviewMatch) {
+    return (
+      <>
+        <AppHeader />
+        <InterviewPage token={interviewMatch[1]} />
+      </>
+    );
+  }
+
+  if (pathname === "/candidate" || pathname === "/candidate/") {
+    return (
+      <>
+        <AppHeader />
+        <CandidatePortal />
+      </>
+    );
   }
 
   const jobMatch = pathname.match(/^\/jobs\/([^/]+)\/?$/);

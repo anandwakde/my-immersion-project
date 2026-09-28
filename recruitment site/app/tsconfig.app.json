@@ -28,5 +28,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "convex/candidates.ts", "convex/resumeExtraction.ts"]
+  "include": ["src", "convex/candidates.ts", "convex/resumeExtraction.ts", "convex/email.ts", "convex/notifications.ts", "convex/matching.ts", "convex/ics.ts", "convex/interviews.ts"]
 }

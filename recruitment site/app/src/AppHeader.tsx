@@ -1,6 +1,7 @@
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/NotificationBell";
 import { navigate, usePathname } from "@/lib/router";
 import { Link } from "@/lib/Link";
 
@@ -25,6 +26,7 @@ export function AppHeader() {
           <div className="flex items-center gap-2">
             {inRecruiterArea ? (
               <>
+                <NotificationBell />
                 <a
                   href="/"
                   target="_blank"

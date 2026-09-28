@@ -1,5 +1,6 @@
 import { useQuery } from "convex/react";
 import { useState } from "react";
+import { Link } from "@/lib/Link";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
@@ -22,15 +23,11 @@ function CandidateCard({
     applicationId: Id<"applications"> | null;
   };
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const profile = useQuery(api.candidates.get, expanded ? { candidateId: candidate._id } : "skip");
-
   return (
-    <li className="rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
-      <button
-        type="button"
-        className="flex w-full items-start justify-between gap-3 text-left"
-        onClick={() => setExpanded((v) => !v)}
+    <li>
+      <Link
+        href={`/recruiter/candidates/${candidate._id}`}
+        className="flex w-full items-start justify-between gap-3 rounded-lg border border-border bg-card p-4 text-left text-sm shadow-sm transition hover:border-primary/40 hover:bg-accent"
       >
         <div>
           <div className="flex items-center gap-2">
@@ -70,41 +67,7 @@ function CandidateCard({
             {candidate.matchScore}/100
           </span>
         )}
-      </button>
-
-      {expanded && (
-        <div className="mt-4 flex flex-col gap-3 border-t border-border pt-3">
-          {profile === undefined && <p className="text-xs text-muted-foreground">Loading...</p>}
-          {profile && profile.summary && <p className="text-muted-foreground">{profile.summary}</p>}
-          {profile && profile.experience && profile.experience.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Experience</p>
-              <ul className="mt-1 flex flex-col gap-2">
-                {profile.experience.map((e, i) => (
-                  <li key={i}>
-                    <p className="font-medium text-foreground">
-                      {e.title} at {e.organization}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{e.dates}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {candidate.education && candidate.education.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Education</p>
-              <ul className="mt-1 flex flex-col gap-0.5">
-                {candidate.education.map((e, i) => (
-                  <li key={i} className="text-muted-foreground">
-                    {e.degree}, {e.institution}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+      </Link>
     </li>
   );
 }

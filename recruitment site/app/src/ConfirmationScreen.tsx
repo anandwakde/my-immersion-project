@@ -25,9 +25,17 @@ export function ConfirmationScreen({
         <p className="mt-1 break-all font-mono text-foreground">{applicationId}</p>
       </div>
 
+      <p className="mt-6 text-sm text-muted-foreground">
+        We've emailed you a confirmation. You can check your status any time on{" "}
+        <a href="/candidate" className="font-medium text-primary underline">
+          My applications
+        </a>
+        .
+      </p>
+
       <a
         href="/"
-        className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline-offset-4 transition hover:underline"
+        className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline-offset-4 transition hover:underline"
       >
         &larr; Browse more open roles
       </a>

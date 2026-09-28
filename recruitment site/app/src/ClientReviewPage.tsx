@@ -178,11 +178,28 @@ export function ClientReviewPage({ token }: { token: string }) {
               <p className="mt-2 text-muted-foreground">Reason: {c.clientRejectionReason}</p>
             )}
 
-            {c.clientStatus === "accepted" && c.interviewSlotAt && (
-              <p className="mt-2 text-muted-foreground">
-                Proposed slot{c.interviewSlotAt2 ? "s" : ""}:{" "}
-                {formatSlots(c.interviewSlotAt, c.interviewSlotAt2, c.interviewSlotTimezone)}
+            {c.clientStatus === "accepted" && c.interviewStatus === "confirmed" && c.interviewAt ? (
+              <p className="mt-2 font-medium text-green-800">
+                Interview confirmed: {formatSlot(c.interviewAt, null)} (your time)
+                {c.meetingLink && (
+                  <>
+                    {" · "}
+                    <a className="text-primary underline" href={c.meetingLink} target="_blank" rel="noopener noreferrer">
+                      Meeting link
+                    </a>
+                  </>
+                )}
               </p>
+            ) : (
+              c.clientStatus === "accepted" &&
+              c.interviewSlotAt && (
+                <p className="mt-2 text-muted-foreground">
+                  Proposed slot{c.interviewSlotAt2 ? "s" : ""}:{" "}
+                  {formatSlots(c.interviewSlotAt, c.interviewSlotAt2, c.interviewSlotTimezone)}
+                  {c.interviewStatus === "awaiting_candidate" && " — waiting for the candidate to pick one."}
+                  {c.interviewStatus === "needs_new_slots" && " — neither works for the candidate; the recruiter will follow up."}
+                </p>
+              )
             )}
 
             {c.resumeUrl && (

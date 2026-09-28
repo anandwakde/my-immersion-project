@@ -6,6 +6,9 @@ import { JobApplications } from "@/JobApplications";
 import { ApplicationDetail } from "@/ApplicationDetail";
 import { CandidateSearch } from "@/CandidateSearch";
 import { RecruiterDashboard } from "@/RecruiterDashboard";
+import { ApplicationsList } from "@/ApplicationsList";
+import { CandidateProfilePage } from "@/CandidateProfilePage";
+import { EmailLog } from "@/EmailLog";
 import { navigate } from "@/lib/router";
 import { Link } from "@/lib/Link";
 
@@ -16,16 +19,22 @@ import { Link } from "@/lib/Link";
 //   /recruiter/jobs/:jobId                      One job's applications
 //   /recruiter/jobs/:jobId/applications/:appId  One application
 //   /recruiter/candidates                       Candidate search
+//   /recruiter/candidates/:candidateId          Candidate profile
+//   /recruiter/applications[?view=…&job=…]      Filtered list of applications
+//   /recruiter/emails                           Email log
 
 const TABS = [
   { href: "/recruiter", label: "Dashboard" },
   { href: "/recruiter/post", label: "Post a Job" },
   { href: "/recruiter/jobs", label: "All Jobs" },
   { href: "/recruiter/candidates", label: "Candidates" },
+  { href: "/recruiter/applications", label: "Applications" },
+  { href: "/recruiter/emails", label: "Email log" },
 ];
 
 function activeTab(pathname: string): string {
   if (pathname.startsWith("/recruiter/jobs")) return "/recruiter/jobs";
+  if (pathname.startsWith("/recruiter/candidates")) return "/recruiter/candidates";
   return TABS.some((t) => t.href === pathname) ? pathname : "/recruiter";
 }
 
@@ -78,6 +87,10 @@ function Screen({ pathname }: { pathname: string }) {
   if (pathname === "/recruiter/post") return <PostJob />;
   if (pathname === "/recruiter/jobs") return <AllJobs />;
   if (pathname === "/recruiter/candidates") return <CandidateSearch />;
+  if (pathname === "/recruiter/applications") return <ApplicationsList />;
+  if (pathname === "/recruiter/emails") return <EmailLog />;
+  const candidateMatch = pathname.match(/^\/recruiter\/candidates\/([^/]+)$/);
+  if (candidateMatch) return <CandidateProfilePage key={pathname} candidateId={candidateMatch[1]} />;
 
   const applicationMatch = pathname.match(/^\/recruiter\/jobs\/([^/]+)\/applications\/([^/]+)$/);
   if (applicationMatch) {

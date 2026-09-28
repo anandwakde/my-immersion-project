@@ -128,6 +128,12 @@ export function JobsListing({ onRecruiterClick }: { onRecruiterClick: () => void
           >
             Hiring for Netlink Group? Recruiter login &rarr;
           </button>
+          <p className="mt-2 text-sm text-blue-100">
+            Already applied?{" "}
+            <a href="/candidate" className="font-medium text-white underline underline-offset-4">
+              Track your application
+            </a>
+          </p>
         </div>
       </div>
 

@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { env, internalAction, internalMutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { escapeHtml, layout, queueEmail, siteUrl } from "./email";
 
 // Checked by the sign-up form before it submits, so a recruiter who already
 // has an account gets a specific "already registered — sign in instead"
@@ -27,42 +29,27 @@ export const isEmailRegistered = query({
 // the recruiter has no working session until that link is used.
 export const sendApprovalEmail = internalAction({
   args: { recruiterEmail: v.string(), approvalToken: v.string() },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const adminEmail = env.ADMIN_EMAIL;
-    const resendKey = env.RESEND_API_KEY;
-    if (!adminEmail || !resendKey) {
-      console.error(
-        "Recruiter signup notification skipped — ADMIN_EMAIL or RESEND_API_KEY is not set on this deployment."
-      );
+    if (!adminEmail) {
+      console.error("Recruiter signup notification skipped — ADMIN_EMAIL is not set on this deployment.");
       return;
     }
-
     const approveUrl = `${env.CONVEX_SITE_URL}/admin/approve-recruiter?token=${args.approvalToken}`;
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendKey}`,
-      },
-      body: JSON.stringify({
-        from: "Netlink Recruitment Portal <noreply@netlink-group.com>",
-        to: adminEmail,
-        subject: `New recruiter signup: ${args.recruiterEmail}`,
-        html: `
-          <p>A new recruiter account was just created:</p>
-          <p><strong>${args.recruiterEmail}</strong></p>
-          <p>They cannot sign in until you approve this account.</p>
-          <p><a href="${approveUrl}" style="display:inline-block;padding:10px 20px;background:#111;color:#fff;text-decoration:none;border-radius:6px;">Approve this recruiter</a></p>
-          <p>Or copy this link: ${approveUrl}</p>
-        `,
+    await ctx.scheduler.runAfter(0, internal.email.send, {
+      to: adminEmail,
+      subject: `New recruiter signup: ${args.recruiterEmail}`,
+      kind: "recruiter_signup",
+      sensitive: false,
+      html: layout({
+        heading: "New recruiter signup",
+        paragraphs: [
+          `A new recruiter account was just created: <strong>${escapeHtml(args.recruiterEmail)}</strong>`,
+          "They cannot sign in until you approve this account.",
+        ],
+        button: { label: "Approve this recruiter", url: approveUrl },
       }),
     });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error(`Failed to send recruiter approval email: ${res.status} ${errText}`);
-    }
   },
 });
 
@@ -80,6 +67,16 @@ export const approveByToken = internalMutation({
       return { ok: true as const, message: `${profile.email} is already approved.` };
     }
     await ctx.db.patch(profile._id, { status: "approved", respondedAt: Date.now() });
+    await queueEmail(ctx, {
+      to: profile.email,
+      subject: "Your Netlink recruiter account is approved",
+      kind: "recruiter_approved",
+      html: layout({
+        heading: "You're approved",
+        paragraphs: ["An admin has approved your recruiter account. You can sign in now."],
+        button: { label: "Sign in", url: `${siteUrl()}/recruiter` },
+      }),
+    });
     return { ok: true as const, message: `${profile.email} has been approved and can now sign in.` };
   },
 });

@@ -6,6 +6,8 @@ import { Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { JobRequirements } from "@/JobRequirements";
 import { KanbanBoard } from "@/KanbanBoard";
+import { Input } from "@/components/ui/input";
+import { NotifyOthersDialog } from "@/DecisionDialogs";
 import { navigate } from "@/lib/router";
 
 const STAGE_LABEL: Record<string, string> = {
@@ -37,6 +39,10 @@ export function JobApplications({
   const [copied, setCopied] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [sortByScore, setSortByScore] = useState(false);
+  const [clientEmail, setClientEmail] = useState("");
+  const [sharedWith, setSharedWith] = useState<string | null>(null);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const stillInRunning = useQuery(api.applications.listStillInRunning, { jobId });
 
   function openApplication(applicationId: Id<"applications">) {
     navigate(`/recruiter/jobs/${jobId}/applications/${applicationId}`);
@@ -62,13 +68,42 @@ export function JobApplications({
         Applications for {jobTitle}
       </h1>
 
+      {applications?.some((a) => a.stage === "hired") && (stillInRunning?.length ?? 0) > 0 && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-600/30 bg-green-50 p-4 text-sm">
+          <p className="text-green-900">
+            Someone has been hired for this role. {stillInRunning!.length} other candidate
+            {stillInRunning!.length === 1 ? " is" : "s are"} still in the running.
+          </p>
+          <Button size="sm" variant="outline" onClick={() => setNotifyOpen(true)}>
+            Notify other candidates
+          </Button>
+        </div>
+      )}
+      <NotifyOthersDialog
+        jobId={jobId}
+        open={notifyOpen}
+        onOpenChange={setNotifyOpen}
+        count={stillInRunning?.length ?? 0}
+      />
+
       <div className="mt-4">
         <JobRequirements jobId={jobId} />
       </div>
 
       <div className="mt-4 rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-medium text-foreground">Share shortlisted candidates with your client</p>
+        <p className="font-medium text-foreground">Share shortlisted candidates with your client</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Add the client's email to send them the link, interview invites and hiring updates automatically.
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Input
+            type="email"
+            aria-label="Client email (optional)"
+            placeholder="Client email (optional)"
+            className="min-w-0 flex-1"
+            value={clientEmail}
+            onChange={(e) => setClientEmail(e.target.value)}
+          />
           <Button
             size="sm"
             variant="outline"
@@ -77,10 +112,12 @@ export function JobApplications({
               setSharing(true);
               setCopied(false);
               setShareError(null);
-              createShareLink({ jobId })
-                .then(({ token, expiresAt }) => {
+              setSharedWith(null);
+              createShareLink({ jobId, clientEmail: clientEmail.trim() || undefined })
+                .then(({ token, expiresAt, clientEmail: savedEmail }) => {
                   setShareUrl(`${window.location.origin}/client/${token}`);
                   setShareExpiresAt(expiresAt);
+                  setSharedWith(clientEmail.trim() ? savedEmail : null);
                 })
                 .catch((err) => {
                   setShareError(
@@ -92,10 +129,11 @@ export function JobApplications({
                 .finally(() => setSharing(false));
             }}
           >
-            {sharing ? "Generating..." : "Generate link"}
+            {sharing ? "Generating..." : clientEmail.trim() ? "Email link to client" : "Generate link"}
           </Button>
         </div>
         {shareError && <p className="mt-2 text-sm text-destructive">{shareError}</p>}
+        {sharedWith && <p className="mt-2 text-sm text-green-700">Review link emailed to {sharedWith}.</p>}
         {shareUrl && (
           <div className="mt-3 flex flex-col gap-1">
             <div className="flex items-center gap-2">

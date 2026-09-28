@@ -42,6 +42,7 @@ export function ApplicationForm({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [contactConsent, setContactConsent] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export function ApplicationForm({
             phone,
             linkedin: "",
             resumeStorageId: storageId,
+            contactConsent,
           });
           onSubmitted(newId);
         })()
@@ -181,6 +183,16 @@ export function ApplicationForm({
         />
         {fileError && <p className="text-sm text-destructive">{fileError}</p>}
       </div>
+
+      <label className="flex items-start gap-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          checked={contactConsent}
+          onChange={(e) => setContactConsent(e.target.checked)}
+        />
+        <span>Optional: Netlink Group may contact me about other roles that match my profile.</span>
+      </label>
 
       {submitError && <p className="text-sm text-destructive">{submitError}</p>}
 

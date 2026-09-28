@@ -9,7 +9,7 @@ type ScoreResult = {
   evidence: string;
 };
 
-async function scoreOneCandidate(
+export async function scoreOneCandidate(
   apiKey: string,
   job: { title: string; mustHaveRequirements: string[]; niceToHaveRequirements: string[] },
   candidate: {

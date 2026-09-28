@@ -1,10 +1,12 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, internalQuery, mutation, query, QueryCtx } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 import { resolveRejected } from "./applicationStage";
 import { buildSearchText } from "./candidates";
+import { escapeHtml, layout, queueEmail, siteUrl } from "./email";
+import { jobOwnerEmail, notifyRecruiters } from "./notifications";
 
 const ALLOWED_RESUME_TYPES = [
   "application/pdf",
@@ -51,6 +53,7 @@ export const create = mutation({
     phone: v.string(),
     linkedin: v.string(),
     resumeStorageId: v.id("_storage"),
+    contactConsent: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const job = await ctx.db.get("jobs", args.jobId);
@@ -100,6 +103,47 @@ export const create = mutation({
       resumeStorageId: args.resumeStorageId,
       stage: "applied",
     });
+
+    // Consent is only ever turned on here, never off — a later application
+    // without the box ticked doesn't withdraw consent given earlier.
+    if (args.contactConsent === true) {
+      await ctx.db.patch("candidates", candidateId, { contactConsent: true, contactConsentAt: Date.now() });
+    }
+
+    const candidateName = existingCandidate?.name ?? args.name;
+    await queueEmail(ctx, {
+      to: email,
+      subject: `Application received: ${job.title}`,
+      kind: "application_received",
+      html: layout({
+        heading: `Thanks for applying, ${escapeHtml(args.name.split(" ")[0])}`,
+        paragraphs: [
+          `We've received your application for <strong>${escapeHtml(job.title)}</strong>.`,
+          `Your application ID is <code>${applicationId}</code>.`,
+          "You can check your application status any time — sign in with this email address and we'll send you a one-time code.",
+        ],
+        button: { label: "Track my application", url: `${siteUrl()}/candidate` },
+      }),
+    });
+    const link = `/recruiter/jobs/${job._id}/applications/${applicationId}`;
+    await notifyRecruiters(ctx, {
+      title: `New application: ${candidateName}`,
+      body: job.title,
+      link,
+    });
+    const owner = await jobOwnerEmail(ctx, job.createdBy);
+    if (owner) {
+      await queueEmail(ctx, {
+        to: owner,
+        subject: `New application: ${candidateName} — ${job.title}`,
+        kind: "new_application",
+        html: layout({
+          heading: "New application",
+          paragraphs: [`${escapeHtml(candidateName)} applied for <strong>${escapeHtml(job.title)}</strong>.`],
+          button: { label: "Review application", url: `${siteUrl()}${link}` },
+        }),
+      });
+    }
     return { applicationId };
   },
 });
@@ -138,7 +182,8 @@ export const get = query({
     const netlinkResumeUrl = application.netlinkResumeStorageId
       ? await ctx.storage.getUrl(application.netlinkResumeStorageId)
       : null;
-    return { ...enriched, resumeUrl, netlinkResumeUrl };
+    const job = await ctx.db.get("jobs", application.jobId);
+    return { ...enriched, resumeUrl, netlinkResumeUrl, jobTitle: job?.title ?? "Unknown role" };
   },
 });
 
@@ -285,6 +330,8 @@ export const setRejected = mutation({
   args: {
     applicationId: v.id("applications"),
     rejected: v.boolean(),
+    // Rejection emails are always the recruiter's choice, never automatic.
+    notifyCandidate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Any signed-in recruiter can update any application — see listAll in jobs.ts.
@@ -297,5 +344,149 @@ export const setRejected = mutation({
       throw new ConvexError("Application not found.");
     }
     await ctx.db.patch("applications", args.applicationId, { rejected: args.rejected });
+    if (args.rejected && args.notifyCandidate) {
+      await sendNotSelectedEmail(ctx, application);
+    }
+  },
+});
+
+async function sendNotSelectedEmail(ctx: MutationCtx, application: Doc<"applications">, message?: string) {
+  const job = await ctx.db.get("jobs", application.jobId);
+  const candidate = await ctx.db.get("candidates", application.candidateId);
+  if (job === null || candidate === null) return;
+  await queueEmail(ctx, {
+    to: candidate.email,
+    subject: `Your application for ${job.title}`,
+    kind: "not_selected",
+    html: layout({
+      heading: `Thank you, ${escapeHtml(candidate.name.split(" ")[0])}`,
+      paragraphs: [
+        `Thank you for your interest in <strong>${escapeHtml(job.title)}</strong> at Netlink Group.`,
+        message
+          ? escapeHtml(message).replace(/\n/g, "<br>")
+          : "After careful consideration, we've decided to move forward with other candidates for this role. We'll keep your details on file and may reach out about future openings.",
+        "We wish you the very best in your search.",
+      ],
+    }),
+  });
+}
+
+// Final hiring step. The recruiter makes the Hired move (after the
+// client's interview verdict); optionally emails the candidate and the
+// client, and closes the job if the position is now filled.
+export const markHired = mutation({
+  args: {
+    applicationId: v.id("applications"),
+    notifyCandidate: v.boolean(),
+    message: v.optional(v.string()),
+    closeJob: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new ConvexError("Must be signed in.");
+    const application = await ctx.db.get("applications", args.applicationId);
+    if (application === null) throw new ConvexError("Application not found.");
+    const job = await ctx.db.get("jobs", application.jobId);
+    const candidate = await ctx.db.get("candidates", application.candidateId);
+    if (job === null || candidate === null) throw new ConvexError("Job or candidate not found.");
+
+    if (application.stage !== "hired") {
+      await ctx.db.insert("stageHistory", {
+        applicationId: application._id,
+        fromStage: application.stage,
+        toStage: "hired",
+        changedBy: userId,
+        changedAt: Date.now(),
+        note: args.closeJob ? "Hired — job closed." : "Hired.",
+      });
+    }
+    await ctx.db.patch("applications", application._id, { stage: "hired", rejected: false, hiredAt: Date.now() });
+    if (args.closeJob && job.status !== "closed") {
+      await ctx.db.patch("jobs", job._id, { status: "closed" });
+    }
+
+    if (args.notifyCandidate) {
+      await queueEmail(ctx, {
+        to: candidate.email,
+        subject: `Great news about ${job.title} at Netlink Group`,
+        kind: "hired",
+        html: layout({
+          heading: `Congratulations, ${escapeHtml(candidate.name.split(" ")[0])}!`,
+          paragraphs: [
+            `We're delighted to let you know you've been selected for <strong>${escapeHtml(job.title)}</strong>.`,
+            args.message?.trim()
+              ? escapeHtml(args.message.trim()).replace(/\n/g, "<br>")
+              : "Our team will contact you shortly with the offer details and next steps.",
+          ],
+        }),
+      });
+    }
+    const link = await ctx.db
+      .query("shareLinks")
+      .withIndex("by_jobId", (q) => q.eq("jobId", job._id))
+      .order("desc")
+      .first();
+    if (link?.clientEmail) {
+      await queueEmail(ctx, {
+        to: link.clientEmail,
+        subject: `Hired: ${candidate.name} — ${job.title}`,
+        kind: "hired_client",
+        html: layout({
+          heading: "Position filled",
+          paragraphs: [
+            `${escapeHtml(candidate.name)} has been marked as hired for <strong>${escapeHtml(job.title)}</strong>.`,
+            args.closeJob ? "The job posting has been closed." : "The job posting remains open.",
+          ],
+        }),
+      });
+    }
+    await notifyRecruiters(ctx, {
+      title: `Hired: ${candidate.name}`,
+      body: `${job.title}${args.closeJob ? " — job closed" : ""}`,
+      link: `/recruiter/jobs/${job._id}/applications/${application._id}`,
+    });
+  },
+});
+
+// After a hire: everyone else still in the running for this job (not
+// hired, not already rejected) is marked rejected and — only because the
+// recruiter explicitly clicked this — sent a polite "not selected" email.
+export const listStillInRunning = query({
+  args: { jobId: v.id("jobs") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return [];
+    const apps = await ctx.db
+      .query("applications")
+      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
+      .take(500);
+    const result = [];
+    for (const app of apps) {
+      if (app.stage === "hired" || resolveRejected(app)) continue;
+      const candidate = await ctx.db.get("candidates", app.candidateId);
+      result.push({ applicationId: app._id, name: candidate?.name ?? "Unknown", stage: app.stage });
+    }
+    return result;
+  },
+});
+
+export const notifyNotSelected = mutation({
+  args: { jobId: v.id("jobs"), message: v.optional(v.string()) },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new ConvexError("Must be signed in.");
+    const apps = await ctx.db
+      .query("applications")
+      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
+      .take(500);
+    let count = 0;
+    for (const app of apps) {
+      if (app.stage === "hired" || resolveRejected(app)) continue;
+      await ctx.db.patch("applications", app._id, { rejected: true });
+      await sendNotSelectedEmail(ctx, app, args.message?.trim() || undefined);
+      count++;
+    }
+    return count;
   },
 });

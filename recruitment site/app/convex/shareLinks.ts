@@ -1,7 +1,13 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, MutationCtx, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { resolveRejected } from "./applicationStage";
+import { escapeHtml, layout, queueEmail, siteUrl } from "./email";
+import { startCandidateScheduling } from "./interviews";
+import { jobOwnerEmail, notifyRecruiters } from "./notifications";
+
+const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 const EXPIRY_MS = 15 * 24 * 60 * 60 * 1000;
 
@@ -10,7 +16,7 @@ function generateToken(): string {
 }
 
 export const create = mutation({
-  args: { jobId: v.id("jobs") },
+  args: { jobId: v.id("jobs"), clientEmail: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
@@ -22,25 +28,48 @@ export const create = mutation({
       throw new ConvexError("Job not found.");
     }
 
+    const clientEmail = args.clientEmail?.trim().toLowerCase() || undefined;
+    if (clientEmail !== undefined && !EMAIL_FORMAT.test(clientEmail)) {
+      throw new ConvexError("Enter a valid client email address.");
+    }
+
     const now = Date.now();
     const existing = await ctx.db
       .query("shareLinks")
       .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
       .order("desc")
       .first();
+    let token: string;
+    let expiresAt: number;
     if (existing !== null && existing.expiresAt > now) {
-      return { token: existing.token, expiresAt: existing.expiresAt };
+      token = existing.token;
+      expiresAt = existing.expiresAt;
+      if (clientEmail !== undefined && clientEmail !== existing.clientEmail) {
+        await ctx.db.patch("shareLinks", existing._id, { clientEmail });
+      }
+    } else {
+      token = generateToken();
+      expiresAt = now + EXPIRY_MS;
+      await ctx.db.insert("shareLinks", { jobId: args.jobId, token, expiresAt, createdBy: userId, clientEmail });
     }
 
-    const token = generateToken();
-    const expiresAt = now + EXPIRY_MS;
-    await ctx.db.insert("shareLinks", {
-      jobId: args.jobId,
-      token,
-      expiresAt,
-      createdBy: userId,
-    });
-    return { token, expiresAt };
+    if (clientEmail !== undefined) {
+      await queueEmail(ctx, {
+        to: clientEmail,
+        subject: `Shortlisted candidates for ${job.title}`,
+        kind: "client_review_link",
+        html: layout({
+          heading: `Candidates for ${job.title}`,
+          paragraphs: [
+            "Netlink Group has shortlisted candidates for your review.",
+            "Open the link to view each resume, then accept (and propose two interview times) or reject with a reason. No login needed.",
+            `The link expires on ${new Date(expiresAt).toUTCString().slice(0, 16)}.`,
+          ],
+          button: { label: "Review candidates", url: `${siteUrl()}/client/${token}` },
+        }),
+      });
+    }
+    return { token, expiresAt, clientEmail: clientEmail ?? existing?.clientEmail ?? null };
   },
 });
 
@@ -79,6 +108,9 @@ export const getByToken = query({
         interviewSlotAt: app.interviewSlotAt ?? null,
         interviewSlotAt2: app.interviewSlotAt2 ?? null,
         interviewSlotTimezone: app.interviewSlotTimezone ?? null,
+        interviewStatus: app.interviewStatus ?? null,
+        interviewAt: app.interviewAt ?? null,
+        meetingLink: app.meetingLink ?? null,
       });
     }
 
@@ -131,6 +163,7 @@ export const submitFeedback = mutation({
         clientRejectionReason: reason,
         clientRespondedAt: Date.now(),
       });
+      await notifyClientDecision(ctx, args.applicationId, "rejected", reason);
     } else {
       if (args.interviewSlotAt === undefined || args.interviewSlotAt2 === undefined) {
         throw new ConvexError("Please pick two interview slots before accepting.");
@@ -149,6 +182,46 @@ export const submitFeedback = mutation({
         interviewSlotAt2: args.interviewSlotAt2,
         interviewSlotTimezone: args.interviewSlotTimezone,
       });
+      await notifyClientDecision(ctx, args.applicationId, "accepted");
+      await startCandidateScheduling(ctx, args.applicationId);
     }
   },
 });
+
+async function notifyClientDecision(
+  ctx: MutationCtx,
+  applicationId: Id<"applications">,
+  decision: "accepted" | "rejected",
+  reason?: string,
+) {
+  const application = await ctx.db.get("applications", applicationId);
+  if (application === null) return;
+  const job = await ctx.db.get("jobs", application.jobId);
+  const candidate = await ctx.db.get("candidates", application.candidateId);
+  if (job === null || candidate === null) return;
+  const link = `/recruiter/jobs/${job._id}/applications/${applicationId}`;
+  const title = decision === "accepted" ? `Client accepted ${candidate.name}` : `Client rejected ${candidate.name}`;
+  const body =
+    decision === "accepted"
+      ? `${job.title} — the candidate has been emailed to pick an interview slot.`
+      : `${job.title} — reason: ${reason ?? ""}`;
+  await notifyRecruiters(ctx, { title, body, link });
+  const owner = await jobOwnerEmail(ctx, job.createdBy);
+  if (owner) {
+    await queueEmail(ctx, {
+      to: owner,
+      subject: `${title} — ${job.title}`,
+      kind: `client_${decision}`,
+      html: layout({
+        heading: title,
+        paragraphs: [
+          `<strong>${escapeHtml(job.title)}</strong>`,
+          decision === "accepted"
+            ? "The client proposed two interview slots. The candidate has been emailed a link to pick one."
+            : `Reason given: "${escapeHtml(reason ?? "")}"`,
+        ],
+        button: { label: "Open application", url: `${siteUrl()}${link}` },
+      }),
+    });
+  }
+}
