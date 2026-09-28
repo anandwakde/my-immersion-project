@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../convex/_generated/api";
 import { ApplicationForm } from "@/ApplicationForm";
 import { ConfirmationScreen } from "@/ConfirmationScreen";
+import { Link } from "@/lib/Link";
 
 // Job descriptions are stored as one free-text block, often pasted from Word
 // or a job spec with each point on its own line (sometimes already prefixed
@@ -54,17 +55,15 @@ export function PublicJobPage({ slug }: { slug: string }) {
     <div>
       <div className="bg-gradient-to-br from-[#1e3a56] to-[#2c5680]">
         <div className="mx-auto max-w-2xl px-6 py-16">
-          <a
+          <Link
             href="/"
-            target="_blank"
-            rel="noopener noreferrer"
             className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-blue-100 transition hover:text-white"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             All open roles
-          </a>
+          </Link>
           <h1 className="animate-fade-up text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
             {job.title}
           </h1>

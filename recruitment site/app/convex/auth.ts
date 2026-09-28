@@ -68,10 +68,19 @@ const PENDING_APPROVAL_ERROR = "PENDING_APPROVAL";
 // WEAK_PASSWORD_ERROR / INVALID_EMAIL_ERROR in src/lib/authErrors.ts.
 export const WEAK_PASSWORD_ERROR = "WEAK_PASSWORD:";
 const PASSWORD_REQUIREMENTS_MESSAGE =
-  "Password must be at least 8 characters and include at least one letter and one number.";
+  "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a symbol.";
 
+// Mirrored in src/lib/passwordRules.ts, which shows the same rules to the
+// user as a live checklist. Applies to new sign-ups and password resets
+// only — existing passwords keep working until they're next changed.
 function validatePasswordRequirements(password: string) {
-  if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+  if (
+    password.length < 8 ||
+    !/[A-Z]/.test(password) ||
+    !/[a-z]/.test(password) ||
+    !/[0-9]/.test(password) ||
+    !/[^A-Za-z0-9]/.test(password)
+  ) {
     throw new ConvexError(`${WEAK_PASSWORD_ERROR} ${PASSWORD_REQUIREMENTS_MESSAGE}`);
   }
 }

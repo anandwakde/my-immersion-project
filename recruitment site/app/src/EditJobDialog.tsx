@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { linesToList, skillsToList } from "@/lib/listFields";
 
 export function EditJobDialog({ job }: { job: Doc<"jobs"> }) {
   const updateJob = useMutation(api.jobs.update);
@@ -22,7 +23,11 @@ export function EditJobDialog({ job }: { job: Doc<"jobs"> }) {
   const [experience, setExperience] = useState(job.experience);
   const [salary, setSalary] = useState(job.salary);
   const [description, setDescription] = useState(job.description);
+  const [responsibilities, setResponsibilities] = useState(job.responsibilities.join("\n"));
+  const [skills, setSkills] = useState(job.skills.join(", "));
   const [saving, setSaving] = useState(false);
+  const hasRequirements =
+    (job.mustHaveRequirements?.length ?? 0) > 0 || (job.niceToHaveRequirements?.length ?? 0) > 0;
   const [error, setError] = useState<string | null>(null);
 
   // Reset the form back to the job's current saved values every time the
@@ -34,6 +39,8 @@ export function EditJobDialog({ job }: { job: Doc<"jobs"> }) {
       setExperience(job.experience);
       setSalary(job.salary);
       setDescription(job.description);
+      setResponsibilities(job.responsibilities.join("\n"));
+      setSkills(job.skills.join(", "));
       setError(null);
     }
     setOpen(next);
@@ -55,7 +62,16 @@ export function EditJobDialog({ job }: { job: Doc<"jobs"> }) {
             e.preventDefault();
             setSaving(true);
             setError(null);
-            updateJob({ jobId: job._id, title, location, experience, salary, description })
+            updateJob({
+              jobId: job._id,
+              title,
+              location,
+              experience,
+              salary,
+              description,
+              responsibilities: linesToList(responsibilities),
+              skills: skillsToList(skills),
+            })
               .then(() => setOpen(false))
               .catch(() => setError("Couldn't save changes. Please try again."))
               .finally(() => setSaving(false));
@@ -94,6 +110,25 @@ export function EditJobDialog({ job }: { job: Doc<"jobs"> }) {
               rows={5}
             />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-responsibilities">Responsibilities (one per line)</Label>
+            <Textarea
+              id="edit-responsibilities"
+              value={responsibilities}
+              onChange={(e) => setResponsibilities(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-skills">Required skills (comma-separated)</Label>
+            <Input id="edit-skills" value={skills} onChange={(e) => setSkills(e.target.value)} />
+          </div>
+          {hasRequirements && (
+            <p className="text-xs text-muted-foreground">
+              Changing the description, responsibilities or skills marks this job's AI requirements as out of date
+              — you'll be prompted to re-analyze before scoring candidates again.
+            </p>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

@@ -1,46 +1,39 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
-import { CreateJob } from "@/CreateJob";
 import { SignIn } from "@/SignIn";
 import { JobsListing } from "@/JobsListing";
 import { PublicJobPage } from "@/PublicJobPage";
 import { ClientReviewPage } from "@/ClientReviewPage";
 import { ClientResumeViewPage } from "@/ClientResumeViewPage";
 import { AppHeader } from "@/AppHeader";
-import { Button } from "@/components/ui/button";
+import { RecruiterArea } from "@/RecruiterArea";
+import { navigate, usePathname } from "@/lib/router";
 import { Id } from "../convex/_generated/dataModel";
 
-function SignOutAction() {
-  const { signOut } = useAuthActions();
-  return (
-    <Button variant="outline" onClick={() => void signOut()}>
-      Sign out
-    </Button>
-  );
-}
-
-function RecruiterArea({ onBackToJobs }: { onBackToJobs: () => void }) {
+function RecruiterGate({ pathname }: { pathname: string }) {
   return (
     <>
+      <AppHeader />
       <AuthLoading>
-        <AppHeader />
         <div className="px-6 py-16 text-center text-sm text-muted-foreground">Loading...</div>
       </AuthLoading>
       <Unauthenticated>
-        <AppHeader />
-        <SignIn onBackToJobs={onBackToJobs} />
+        <SignIn onBackToJobs={() => navigate("/")} />
       </Unauthenticated>
       <Authenticated>
-        <AppHeader action={<SignOutAction />} />
-        <CreateJob />
+        <RecruiterArea pathname={pathname} />
       </Authenticated>
     </>
   );
 }
 
 export default function App() {
-  const jobMatch = window.location.pathname.match(/^\/jobs\/([^/]+)\/?$/);
+  const pathname = usePathname();
+
+  if (pathname === "/recruiter" || pathname.startsWith("/recruiter/")) {
+    return <RecruiterGate pathname={pathname.replace(/\/$/, "")} />;
+  }
+
+  const jobMatch = pathname.match(/^\/jobs\/([^/]+)\/?$/);
   if (jobMatch) {
     return (
       <>
@@ -50,7 +43,7 @@ export default function App() {
     );
   }
 
-  const clientResumeMatch = window.location.pathname.match(/^\/client\/([^/]+)\/view\/([^/]+)\/?$/);
+  const clientResumeMatch = pathname.match(/^\/client\/([^/]+)\/view\/([^/]+)\/?$/);
   if (clientResumeMatch) {
     return (
       <>
@@ -63,7 +56,7 @@ export default function App() {
     );
   }
 
-  const clientMatch = window.location.pathname.match(/^\/client\/([^/]+)\/?$/);
+  const clientMatch = pathname.match(/^\/client\/([^/]+)\/?$/);
   if (clientMatch) {
     return (
       <>
@@ -73,32 +66,10 @@ export default function App() {
     );
   }
 
-  return <Landing />;
-}
-
-function Landing() {
-  const [showRecruiter, setShowRecruiter] = useState(
-    () => window.location.pathname.replace(/\/$/, "") === "/recruiter"
-  );
-
-  function goToRecruiter() {
-    window.history.pushState({}, "", "/recruiter");
-    setShowRecruiter(true);
-  }
-
-  function goToJobs() {
-    window.history.pushState({}, "", "/");
-    setShowRecruiter(false);
-  }
-
-  if (showRecruiter) {
-    return <RecruiterArea onBackToJobs={goToJobs} />;
-  }
-
   return (
     <>
       <AppHeader />
-      <JobsListing onRecruiterClick={goToRecruiter} />
+      <JobsListing onRecruiterClick={() => navigate("/recruiter")} />
     </>
   );
 }

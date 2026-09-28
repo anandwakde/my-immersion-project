@@ -49,7 +49,7 @@ export const listAll = query({
     if (userId === null) {
       return [];
     }
-    return await ctx.db.query("jobs").order("desc").take(50);
+    return await ctx.db.query("jobs").order("desc").take(200);
   },
 });
 
@@ -62,15 +62,37 @@ export const listPublished = query({
 });
 
 // Recruiter-facing lookup by id (any signed-in recruiter, like listAll
-// above) — used by the JD requirements / AI matching UI.
+// above) — used by the JD requirements / AI matching UI and by the job's
+// own page URL. Takes a plain string because the id may come straight from
+// the address bar; anything that isn't a valid job id reads as not found.
 export const get = query({
-  args: { jobId: v.id("jobs") },
+  args: { jobId: v.string() },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return null;
     }
-    return await ctx.db.get("jobs", args.jobId);
+    const jobId = ctx.db.normalizeId("jobs", args.jobId);
+    return jobId === null ? null : await ctx.db.get("jobs", jobId);
+  },
+});
+
+// Validates an application id taken from the address bar and checks it
+// belongs to the job in that same URL, so a mistyped or mismatched link
+// shows "not found" instead of crashing or showing the wrong job's data.
+export const resolveApplicationId = query({
+  args: { jobId: v.string(), applicationId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return null;
+    }
+    const applicationId = ctx.db.normalizeId("applications", args.applicationId);
+    if (applicationId === null) {
+      return null;
+    }
+    const application = await ctx.db.get("applications", applicationId);
+    return application !== null && application.jobId === args.jobId ? applicationId : null;
   },
 });
 
@@ -128,6 +150,7 @@ export const setRequirements = internalMutation({
     await ctx.db.patch("jobs", args.jobId, {
       mustHaveRequirements: args.mustHaveRequirements,
       niceToHaveRequirements: args.niceToHaveRequirements,
+      requirementsStale: false,
     });
   },
 });
@@ -174,6 +197,8 @@ export const update = mutation({
     experience: v.string(),
     salary: v.string(),
     description: v.string(),
+    responsibilities: v.array(v.string()),
+    skills: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -184,24 +209,39 @@ export const update = mutation({
     if (job === null) {
       throw new ConvexError("Job not found.");
     }
+    // The AI requirements were derived from the description,
+    // responsibilities and skills — if any of those change, flag the
+    // requirements (and so any match scores built on them) as out of date
+    // until the recruiter re-analyzes or saves them again.
+    const hasRequirements =
+      (job.mustHaveRequirements?.length ?? 0) > 0 || (job.niceToHaveRequirements?.length ?? 0) > 0;
+    const sourceChanged =
+      job.description !== args.description ||
+      job.responsibilities.join("\n") !== args.responsibilities.join("\n") ||
+      job.skills.join("\n") !== args.skills.join("\n");
     await ctx.db.patch("jobs", args.jobId, {
       title: args.title,
       location: args.location,
       experience: args.experience,
       salary: args.salary,
       description: args.description,
+      responsibilities: args.responsibilities,
+      skills: args.skills,
+      ...(hasRequirements && sourceChanged ? { requirementsStale: true } : {}),
     });
   },
 });
 
-// Toggles a published job out of (and back into) the public "All open
-// roles" listing (see listPublished/getBySlug, both gated on status ===
-// "published") — the recruiter dashboard's listAll always shows every job
-// regardless of status, so a private job stays fully manageable there.
+// Moves a job between published (on the public "All open roles" listing),
+// private (hidden, still hiring via shared links) and closed (no longer
+// hiring). listPublished/getBySlug are gated on status === "published", so
+// both private and closed jobs disappear from candidates' view; the
+// recruiter's listAll always shows every job regardless of status, so they
+// stay fully manageable — and a closed job can be reopened at any time.
 export const setVisibility = mutation({
   args: {
     jobId: v.id("jobs"),
-    status: v.union(v.literal("published"), v.literal("private")),
+    status: v.union(v.literal("published"), v.literal("private"), v.literal("closed")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -285,6 +325,7 @@ export const updateRequirements = mutation({
     await ctx.db.patch("jobs", args.jobId, {
       mustHaveRequirements: args.mustHaveRequirements,
       niceToHaveRequirements: args.niceToHaveRequirements,
+      requirementsStale: false,
     });
   },
 });

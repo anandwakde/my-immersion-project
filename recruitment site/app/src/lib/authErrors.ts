@@ -34,7 +34,7 @@ export function isPendingApproval(err: unknown): boolean {
 export function friendlySignUpError(err: unknown): string {
   const data = convexErrorData(err);
   if (data?.includes(WEAK_PASSWORD_ERROR)) {
-    return "Password must be at least 8 characters and include at least one letter and one number.";
+    return "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a symbol.";
   }
   if (data?.includes(INVALID_EMAIL_ERROR)) {
     return "Enter a valid email address (e.g. name@company.com).";

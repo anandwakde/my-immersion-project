@@ -4,9 +4,9 @@ import { useState } from "react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { ApplicationDetail } from "@/ApplicationDetail";
 import { JobRequirements } from "@/JobRequirements";
 import { KanbanBoard } from "@/KanbanBoard";
+import { navigate } from "@/lib/router";
 
 const STAGE_LABEL: Record<string, string> = {
   applied: "Applied",
@@ -30,7 +30,6 @@ export function JobApplications({
 }) {
   const applications = useQuery(api.applications.listForJob, { jobId });
   const createShareLink = useMutation(api.shareLinks.create);
-  const [selectedApplicationId, setSelectedApplicationId] = useState<Id<"applications"> | null>(null);
   const [tab, setTab] = useState<Tab>("all");
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareExpiresAt, setShareExpiresAt] = useState<number | null>(null);
@@ -39,13 +38,8 @@ export function JobApplications({
   const [shareError, setShareError] = useState<string | null>(null);
   const [sortByScore, setSortByScore] = useState(false);
 
-  if (selectedApplicationId) {
-    return (
-      <ApplicationDetail
-        applicationId={selectedApplicationId}
-        onBack={() => setSelectedApplicationId(null)}
-      />
-    );
+  function openApplication(applicationId: Id<"applications">) {
+    navigate(`/recruiter/jobs/${jobId}/applications/${applicationId}`);
   }
 
   const shortlisted = applications?.filter((app) => app.stage === "shortlisted" && !app.rejected) ?? [];
@@ -59,7 +53,7 @@ export function JobApplications({
   const pending = shortlisted.filter((app) => app.clientStatus === undefined).length;
 
   return (
-    <div className={`mx-auto px-6 py-12 ${tab === "pipeline" ? "max-w-6xl" : "max-w-2xl"}`}>
+    <div className={`mx-auto mt-6 ${tab === "pipeline" ? "" : "max-w-2xl"}`}>
       <Button variant="outline" onClick={onBack}>
         &larr; Back to jobs
       </Button>
@@ -168,7 +162,7 @@ export function JobApplications({
       </div>
 
       {tab === "pipeline" ? (
-        <KanbanBoard jobId={jobId} onOpen={setSelectedApplicationId} />
+        <KanbanBoard jobId={jobId} onOpen={openApplication} />
       ) : tab === "clientFeedback" ? (
         <div className="mt-6 flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
@@ -225,7 +219,7 @@ export function JobApplications({
               <button
                 type="button"
                 className="w-full rounded-lg border border-border bg-card p-4 text-left text-sm shadow-sm transition hover:border-primary/40 hover:bg-accent"
-                onClick={() => setSelectedApplicationId(app._id)}
+                onClick={() => openApplication(app._id)}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-foreground">{app.name}</span>

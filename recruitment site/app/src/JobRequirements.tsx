@@ -17,12 +17,67 @@ function fromLines(text: string): string[] {
     .filter(Boolean);
 }
 
+function RequirementList({ label, items }: { label: string; items: string[] | undefined }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold text-foreground">{label}</p>
+      {items && items.length > 0 ? (
+        <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-foreground">
+          {items.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-1 text-sm text-muted-foreground">None</p>
+      )}
+    </div>
+  );
+}
+
+// Read-only once requirements exist, so the analysis result reads as a
+// finished answer rather than an open form; Edit switches to the form.
+function RequirementsView({
+  jobId,
+  job,
+}: {
+  jobId: Id<"jobs">;
+  job: { mustHaveRequirements?: string[]; niceToHaveRequirements?: string[] };
+}) {
+  const hasRequirements =
+    (job.mustHaveRequirements?.length ?? 0) > 0 || (job.niceToHaveRequirements?.length ?? 0) > 0;
+  const [editing, setEditing] = useState(false);
+
+  if (editing || !hasRequirements) {
+    return (
+      <RequirementsForm
+        jobId={jobId}
+        initial={job}
+        onDone={hasRequirements ? () => setEditing(false) : undefined}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <RequirementList label="Must-have requirements" items={job.mustHaveRequirements} />
+      <RequirementList label="Nice-to-have requirements" items={job.niceToHaveRequirements} />
+      <div>
+        <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+          Edit requirements
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function RequirementsForm({
   jobId,
   initial,
+  onDone,
 }: {
   jobId: Id<"jobs">;
   initial: { mustHaveRequirements?: string[]; niceToHaveRequirements?: string[] };
+  onDone?: () => void;
 }) {
   const updateRequirements = useMutation(api.jobs.updateRequirements);
   const [mustHaveText, setMustHaveText] = useState(toLines(initial.mustHaveRequirements));
@@ -40,7 +95,10 @@ function RequirementsForm({
       mustHaveRequirements: fromLines(mustHaveText),
       niceToHaveRequirements: fromLines(niceToHaveText),
     })
-      .then(() => setSaved(true))
+      .then(() => {
+        setSaved(true);
+        onDone?.();
+      })
       .catch((err) => {
         setSaveError(
           err instanceof ConvexError && typeof err.data === "string"
@@ -65,6 +123,11 @@ function RequirementsForm({
         <Button size="sm" disabled={saving} onClick={save}>
           {saving ? "Saving..." : "Save requirements"}
         </Button>
+        {onDone && (
+          <Button size="sm" variant="ghost" disabled={saving} onClick={onDone}>
+            Cancel
+          </Button>
+        )}
         {saved && <span className="text-sm text-muted-foreground">Saved.</span>}
         {saveError && <span className="text-sm text-destructive">{saveError}</span>}
       </div>
@@ -152,11 +215,18 @@ export function JobRequirements({ jobId }: { jobId: Id<"jobs"> }) {
 
       {job === undefined && <p className="text-sm text-muted-foreground">Loading...</p>}
       {job === null && <p className="text-sm text-muted-foreground">Job not found.</p>}
+      {job?.requirementsStale && (
+        <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-sm text-amber-900">
+          The job description was edited after these requirements were generated. Re-analyze (or review and save
+          them) before scoring candidates, so scores match the current posting.
+        </p>
+      )}
+
       {job && (
-        <RequirementsForm
+        <RequirementsView
           key={`${job.mustHaveRequirements?.join("|")}__${job.niceToHaveRequirements?.join("|")}`}
           jobId={jobId}
-          initial={job}
+          job={job}
         />
       )}
     </div>

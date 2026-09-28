@@ -1,5 +1,26 @@
 import { v } from "convex/values";
-import { env, internalAction, internalMutation } from "./_generated/server";
+import { env, internalAction, internalMutation, query } from "./_generated/server";
+
+// Checked by the sign-up form before it submits, so a recruiter who already
+// has an account gets a specific "already registered — sign in instead"
+// message. Convex Auth's own duplicate-account error is a plain Error whose
+// message is hidden on production, so it can't be told apart from other
+// failures on the client (see src/lib/authErrors.ts). Trade-off: this lets
+// anyone check whether an email has a recruiter account; acceptable for an
+// internal, admin-approved recruiter portal.
+export const isEmailRegistered = query({
+  args: { email: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const account = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.trim()),
+      )
+      .unique();
+    return account !== null;
+  },
+});
 
 // Called from auth.ts's afterUserCreatedOrUpdated callback right after a new
 // recruiter account is created. Emails the admin a one-click approve link;

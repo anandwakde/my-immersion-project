@@ -20,6 +20,10 @@ export default defineSchema({
     // used by AI matching to score candidates against this job.
     mustHaveRequirements: v.optional(v.array(v.string())),
     niceToHaveRequirements: v.optional(v.array(v.string())),
+    // Set when the description/responsibilities/skills are edited after
+    // requirements were generated; cleared when requirements are saved or
+    // re-analyzed.
+    requirementsStale: v.optional(v.boolean()),
   })
     .index("by_slug", ["slug"])
     .index("by_createdBy", ["createdBy"]),
