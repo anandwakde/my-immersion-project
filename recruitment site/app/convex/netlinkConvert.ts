@@ -1,13 +1,13 @@
 "use node";
 
 import { ConvexError, v } from "convex/values";
-import { action, env } from "./_generated/server";
+import { action, internalAction, env } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import mammoth from "mammoth";
-import { extractText, getDocumentProxy } from "unpdf";
 import pdfMake from "pdfmake";
 import type { Content, TDocumentDefinitions } from "pdfmake/interfaces";
+import { extractResumeText } from "./resumeExtraction";
 
 // Roboto font, embedded as base64 (same approach as NETLINK_LOGO_BASE64
 // below) so pdfmake never needs to read a font file off disk — Convex's
@@ -43,11 +43,6 @@ pdfMake.setFonts({
 pdfMake.setUrlAccessPolicy(() => false);
 pdfMake.setLocalAccessPolicy(() => false);
 
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  const pdf = await getDocumentProxy(new Uint8Array(buffer));
-  const { text } = await extractText(pdf, { mergePages: true });
-  return text;
-}
 
 
 const NETLINK_LOGO_BASE64 =
@@ -67,7 +62,18 @@ function computeInitials(fullName: string): string {
   return parts.map((p) => p[0]!.toUpperCase()).join("");
 }
 
-type SectionItem = { text: string; kind: "entry" | "bullet" | "text" };
+type ExtractedTable = { headers: string[] | null; rows: string[][] };
+// A "table" item is positioned inline, at whatever point in the section it
+// occurred in the source document — a section can have prose before AND
+// after a table (or several tables), which an earlier section-level-only
+// "table" field couldn't represent: it forced an all-or-nothing choice
+// between a section being a table or being prose, so a resume section with
+// a small metadata table per entry *and* a free-text description per entry
+// (a common resume pattern) lost every description to make room for the
+// table.
+type SectionItem =
+  | { kind: "entry" | "bullet" | "text"; text: string }
+  | { kind: "table"; table: ExtractedTable };
 type ExtractedSection = { heading: string; items: SectionItem[] };
 type ExtractedResume = {
   fullName: string;
@@ -78,28 +84,46 @@ export const convert = action({
   args: { applicationId: v.id("applications") },
   returns: v.object({ netlinkResumeStorageId: v.id("_storage") }),
   handler: async (ctx, args) => {
-    const info = await ctx.runQuery(internal.applications.getForConvert, {
-      applicationId: args.applicationId,
-    });
-    if (info === null) {
-      throw new ConvexError("Application not found.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new ConvexError("Must be signed in.");
     }
-
-    const { pdfBuffer, initials } = await buildNetlinkResumePdf(ctx, info);
-
-    const netlinkResumeStorageId = await ctx.storage.store(
-      new Blob([Uint8Array.from(pdfBuffer)], { type: "application/pdf" }),
-    );
-
-    await ctx.runMutation(internal.applications.setNetlinkResume, {
-      applicationId: args.applicationId,
-      netlinkResumeStorageId,
-      netlinkResumeFileName: `${initials}.pdf`,
-    });
-
-    return { netlinkResumeStorageId };
+    return await runConvert(ctx, args.applicationId);
   },
 });
+
+// Triggered automatically when a candidate is shortlisted (see setStage in
+// applications.ts, via the scheduler) — a scheduled function carries no
+// caller identity, so this internal variant skips the auth check that
+// `convert` above does; the mutation that scheduled it already checked.
+export const convertInternal = internalAction({
+  args: { applicationId: v.id("applications") },
+  returns: v.object({ netlinkResumeStorageId: v.id("_storage") }),
+  handler: async (ctx, args) => {
+    return await runConvert(ctx, args.applicationId);
+  },
+});
+
+async function runConvert(ctx: any, applicationId: Id<"applications">): Promise<{ netlinkResumeStorageId: Id<"_storage"> }> {
+  const info = await ctx.runQuery(internal.applications.getForConvert, { applicationId });
+  if (info === null) {
+    throw new ConvexError("Application not found.");
+  }
+
+  const { pdfBuffer, initials } = await buildNetlinkResumePdf(ctx, info);
+
+  const netlinkResumeStorageId = await ctx.storage.store(
+    new Blob([Uint8Array.from(pdfBuffer)], { type: "application/pdf" }),
+  );
+
+  await ctx.runMutation(internal.applications.setNetlinkResume, {
+    applicationId,
+    netlinkResumeStorageId,
+    netlinkResumeFileName: `${initials}.pdf`,
+  });
+
+  return { netlinkResumeStorageId };
+}
 
 async function buildNetlinkResumePdf(
   ctx: { storage: { get: (id: Id<"_storage">) => Promise<Blob | null> } },
@@ -116,30 +140,7 @@ async function buildNetlinkResumePdf(
     }
     const buffer = Buffer.from(await blob.arrayBuffer());
 
-    let resumeText: string;
-    if (info.resumeContentType === "application/pdf") {
-      resumeText = await extractPdfText(buffer);
-    } else if (
-      info.resumeContentType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
-      const result = await mammoth.extractRawText({ buffer });
-      resumeText = result.value;
-    } else {
-      throw new ConvexError(
-        "This resume format can't be converted — only PDF and Word (.docx) resumes are supported. Legacy .doc files aren't.",
-      );
-    }
-
-    resumeText = resumeText.trim();
-    if (resumeText.length < 40) {
-      throw new ConvexError(
-        "Couldn't read any text from this resume — it may be a scanned image. Try a text-based PDF or Word doc instead.",
-      );
-    }
-    if (resumeText.length > MAX_RESUME_TEXT_LENGTH) {
-      resumeText = resumeText.slice(0, MAX_RESUME_TEXT_LENGTH);
-    }
+    const resumeText = await extractResumeText(buffer, info.resumeContentType, MAX_RESUME_TEXT_LENGTH);
 
     const apiKey = env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -159,22 +160,29 @@ async function buildNetlinkResumePdf(
             role: "system",
             content: `You convert a candidate resume's raw text into sections for reformatting into a company template. Do NOT summarize, paraphrase, reword, or condense anything — preserve the candidate's own wording, keywords, and section headings as closely as possible. Your only edits should be fixing obvious line-break/extraction artifacts (e.g. a bullet point split across two lines by the PDF/Word extractor) and removing personal contact information (see below).
 
+The source text may contain a few special markers inserted by the extraction step, not written by the candidate:
+- A block between "[DOCUMENT HEADER — ...]" and "[END DOCUMENT HEADER]": this is the resume's Word document header (name/title/contact line), which normally wouldn't appear in the body text at all. Use it ONLY to determine "fullName" below. Never turn it into a section, never copy its phone number, email, or address into any section.
+- "@HEADING@ " at the start of a line: the original document applied a real heading style to this line — treat it as a definite, reliable section-heading boundary.
+- "@ENTRY@ " at the start of a line: this line is a single entry's identifying line (e.g. one project's "Client: X · Project: Y · Role: Z · Duration: W" line) — always output it as one "entry" item, and every line that follows it (up to the next "@ENTRY@ " line, blank line, or heading) is that same entry's own description/responsibilities content ("text" for prose, "bullet" for bullet points). Do not compress, summarize, or drop any of that content just because several "@ENTRY@ " blocks repeat the same fields — reproduce every single one in full, exactly like you would for a normal work-experience section.
+- A block between "[TABLE R ROWS x C COLUMNS]" and "[/TABLE]", with each line being one row and its cells separated by " | ": this is a literal table from the original document (e.g. a two-column skills table, a multi-column work-history table, or a small per-entry metadata table). The R and C in the marker are the EXACT row and column counts of the source table — your output "table" item's "rows" array must have exactly R entries (plus one more, as "headers", only if R already includes a genuine header row — see below), each with exactly C cells. A table with many rows and few columns (e.g. R=7, C=2, a repeating "label | value" pattern) is NOT the same shape as a table with few rows and many columns — never transpose one into the other, and never treat a column of repeating short labels as if they were column headers unless the source genuinely has a distinct header row followed by data rows of a different shape. Preserve it as an actual table in your output (see the "table" item kind below) — do not flatten it into bullets or prose, do not drop any row or cell, and do not invent extra columns by re-splitting one cell's content. A cell may itself contain " ~ " — that marks separate paragraphs that were inside that ONE cell in the original (e.g. a resume laid out as a table where one cell holds several label lines and another cell holds a long description with its own paragraphs). Keep all of that content in the corresponding output cell string exactly as it was, no matter how long — a long cell is not a reason to shorten, summarize, or drop part of it. Turn each " ~ " into a real line break (\n) in that cell's output string, so every paragraph they separate renders on its own line and none of them are lost.
+
 Return ONLY a JSON object with keys:
-- "fullName": the candidate's full name as written on the resume.
+- "fullName": the candidate's full name. Prefer the document header block if present; otherwise use the name as written in the body. If you genuinely cannot find a name anywhere, return an empty string — never invent or guess a name.
 - "sections": an array of objects, in the SAME ORDER the sections appear in the original resume. Do not reorder, merge, drop, or add sections. Every section in the source resume — Summary, Professional Experience, Skills, Knowledge and Skills, Certifications, Awards, Achievements, Projects, Languages, Publications, Volunteer Experience, or any other heading the resume uses — must appear here under its own original heading. If the resume has no summary/objective section, do not create one.
   Each section object has:
   - "heading": the section's heading, using the resume's own exact wording. Do not rename or normalize it.
-  - "items": an array of objects, each with:
-    - "text": the content, preserved close to verbatim.
-    - "kind": "entry" for a bold sub-heading line within the section (e.g. a job's "Company: Title   Dates" line, or a degree's "Institution, Degree   Dates" line), "bullet" for a bullet point (under the nearest preceding "entry", or standalone in a flat-list section like Skills/Certifications/Awards), or "text" for plain paragraph prose (e.g. a summary paragraph, or a section written as unbroken prose rather than bullets).
-  For a work-experience-style section: each job is one "entry" item (its company/title/dates line) immediately followed by that job's "bullet" items, then the next job's "entry" item, and so on. Same pattern for education entries.
-  For a flat-list section (Skills, Certifications, Awards, Languages, etc.): use one "bullet" item per individual entry, preserving each keyword/item exactly as the resume lists it. Do not merge or drop individual skills, certifications, or achievements.
+  - "items": an array of objects, IN ORIGINAL ORDER, each one of:
+    - { "kind": "entry" | "bullet" | "text", "text": "..." } — "entry" for a bold sub-heading line within the section (e.g. a job's "Company: Title   Dates" line, or a degree's "Institution, Degree   Dates" line), "bullet" for a bullet point (under the nearest preceding "entry", or standalone in a flat-list section like Skills/Certifications/Awards), or "text" for plain paragraph prose (e.g. a summary paragraph, or unbroken prose rather than bullets).
+    - { "kind": "table", "table": { "headers": [...] or null, "rows": [[...], [...]] } } — inserted at the exact point a "[TABLE]...[/TABLE]" block occurred. "headers" is the first row's cells if they're column labels, or null if the first row is already data. "rows" is every remaining row, each an array of cell strings, in original order — every row from the source table must appear.
+  A section can contain more than one "table" item, and can mix "table" items with "entry"/"bullet"/"text" items in whatever order they actually occurred — for example, a "Project Experience" section where each project is a small metadata table (Client/Role/Duration/...) immediately followed by that project's free-text description and responsibilities bullets, then the next project's table, and so on. Preserve that exact interleaving; never pull all the tables in a section to the front, and never let adding a table cause you to drop the prose around it.
+  For a work-experience-style section without tables: each job is one "entry" item (its company/title/dates line) immediately followed by that job's "bullet" items, then the next job's "entry" item, and so on. Same pattern for education entries.
+  For a flat-list section (Skills, Certifications, Awards, Languages, etc.) that is NOT a "[TABLE]" block: use one "bullet" item per individual entry, preserving each keyword/item exactly as the resume lists it. Do not merge or drop individual skills, certifications, or achievements.
 
 Do not include any section, or any item within a kept section, that is purely personal contact information: full mailing address, phone number, personal email address, or LinkedIn/GitHub/portfolio links. If a section mixes contact details with other content (e.g. a header block with both an address and a summary paragraph), drop only the contact-detail lines and keep the rest exactly as written.
 
 Do not invent content that is not in the source text.
 
-The resume may be long, with many entries (e.g. a long work history with many roles). Before finalizing your answer, re-read the entire source text from beginning to end and check that every single entry — every job, every bullet, every certification, every line — has a corresponding item somewhere in your output. It is critical that no entry is silently skipped, including short entries or ones located near the end of a long section.`,
+The resume may be long, with many entries (e.g. a long work history with many roles). Before finalizing your answer, re-read the entire source text from beginning to end and check that every single entry — every job, every bullet, every certification, every table row — has a corresponding item somewhere in your output. It is critical that no entry is silently skipped, including short entries or ones located near the end of a long section.`,
           },
           { role: "user", content: resumeText },
         ],
@@ -226,6 +234,46 @@ The resume may be long, with many entries (e.g. a long work history with many ro
     // Skills/Education template. Only personal contact info was stripped by
     // the extraction step above; everything else (including sections like
     // Certifications, Awards, or "Knowledge and Skills") passes through as-is.
+    // Renders a genuine table from the source document as a real pdfmake
+    // table, so its row/column structure survives instead of being
+    // flattened into bullets/prose. Rows are padded to a common width since
+    // AI-returned rows aren't guaranteed uniform length.
+    function renderTable(table: ExtractedTable) {
+      const allRows = table.headers ? [table.headers, ...table.rows] : table.rows;
+      if (allRows.length === 0) return;
+      const colCount = Math.max(1, ...allRows.map((r) => r.length));
+      const body = allRows.map((row, rowIndex) =>
+        Array.from({ length: colCount }, (_, i) => ({
+          text: row[i] ?? "",
+          bold: rowIndex === 0 && !!table.headers,
+        })),
+      );
+      // A wide table (many columns) needs a smaller font and tighter cell
+      // padding to have any chance of fitting the page width — otherwise
+      // pdfmake lets a column overflow the page edge rather than shrink
+      // further, silently cutting it off instead of erroring. This is a
+      // safety net independent of the AI getting the table's row/column
+      // shape right in the first place.
+      const fontSize = colCount <= 4 ? 9 : colCount <= 6 ? 8 : 7;
+      content.push({
+        table: {
+          headerRows: table.headers ? 1 : 0,
+          widths: Array(colCount).fill("*"),
+          body,
+        },
+        layout: {
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0,
+          paddingLeft: () => 3,
+          paddingRight: () => 3,
+          paddingTop: () => 2,
+          paddingBottom: () => 2,
+        },
+        fontSize,
+        margin: [0, 4, 0, 0],
+      });
+    }
+
     for (const section of extracted.sections ?? []) {
       if (!section.items?.length) continue;
       content.push({ text: section.heading.toUpperCase(), style: "h1" });
@@ -244,7 +292,9 @@ The resume may be long, with many entries (e.g. a long work history with many ro
           continue;
         }
         flushBullets();
-        if (item.kind === "entry") {
+        if (item.kind === "table") {
+          renderTable(item.table);
+        } else if (item.kind === "entry") {
           content.push({ text: item.text, bold: true, margin: [0, 6, 0, 0] });
         } else {
           content.push({ text: item.text, alignment: "justify" });

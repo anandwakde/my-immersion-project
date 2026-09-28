@@ -8,12 +8,21 @@
  * @module
  */
 
+import type * as applicationStage from "../applicationStage.js";
 import type * as applications from "../applications.js";
 import type * as auth from "../auth.js";
+import type * as candidateParser from "../candidateParser.js";
+import type * as candidates from "../candidates.js";
+import type * as dashboard from "../dashboard.js";
 import type * as http from "../http.js";
+import type * as jobRequirements from "../jobRequirements.js";
 import type * as jobs from "../jobs.js";
+import type * as matches from "../matches.js";
+import type * as matching from "../matching.js";
+import type * as migrations from "../migrations.js";
 import type * as netlinkConvert from "../netlinkConvert.js";
 import type * as recruiterAuth from "../recruiterAuth.js";
+import type * as resumeExtraction from "../resumeExtraction.js";
 import type * as shareLinks from "../shareLinks.js";
 
 import type {
@@ -23,12 +32,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  applicationStage: typeof applicationStage;
   applications: typeof applications;
   auth: typeof auth;
+  candidateParser: typeof candidateParser;
+  candidates: typeof candidates;
+  dashboard: typeof dashboard;
   http: typeof http;
+  jobRequirements: typeof jobRequirements;
   jobs: typeof jobs;
+  matches: typeof matches;
+  matching: typeof matching;
+  migrations: typeof migrations;
   netlinkConvert: typeof netlinkConvert;
   recruiterAuth: typeof recruiterAuth;
+  resumeExtraction: typeof resumeExtraction;
   shareLinks: typeof shareLinks;
 }>;
 
@@ -58,4 +76,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
+};

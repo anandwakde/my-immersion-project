@@ -56,6 +56,8 @@ export function PublicJobPage({ slug }: { slug: string }) {
         <div className="mx-auto max-w-2xl px-6 py-16">
           <a
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-blue-100 transition hover:text-white"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">

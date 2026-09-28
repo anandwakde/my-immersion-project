@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { resolveRejected } from "./applicationStage";
 
 const EXPIRY_MS = 15 * 24 * 60 * 60 * 1000;
 
@@ -65,7 +66,7 @@ export const getByToken = query({
 
     const candidates = [];
     for (const app of applications) {
-      if (app.status !== "shortlisted" || app.netlinkResumeStorageId === undefined) {
+      if (app.stage !== "shortlisted" || resolveRejected(app) || app.netlinkResumeStorageId === undefined) {
         continue;
       }
       const resumeUrl = await ctx.storage.getUrl(app.netlinkResumeStorageId);
@@ -112,7 +113,11 @@ export const submitFeedback = mutation({
     if (application === null || application.jobId !== link.jobId) {
       throw new ConvexError("Candidate not found.");
     }
-    if (application.status !== "shortlisted" || application.netlinkResumeStorageId === undefined) {
+    if (
+      application.stage !== "shortlisted" ||
+      resolveRejected(application) ||
+      application.netlinkResumeStorageId === undefined
+    ) {
       throw new ConvexError("This candidate is not available for review.");
     }
 

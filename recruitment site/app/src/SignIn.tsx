@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PENDING_APPROVAL_ERROR } from "@/lib/authErrors";
+import { isPendingApproval, friendlySignUpError } from "@/lib/authErrors";
 
 function BackButton({ onClick, children }: { onClick: () => void; children: string }) {
   return (
@@ -129,15 +129,18 @@ function ResetPasswordForm({ email, onBack }: { email: string; onBack: () => voi
 function PendingApprovalScreen({ onBackToJobs }: { onBackToJobs: () => void }) {
   return (
     <div className="animate-pop-in mx-auto max-w-sm px-6 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-accent-foreground">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-7 w-7">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l2.5 2.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+      <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30">
+        <span className="absolute inset-0 animate-ping rounded-full bg-green-400/40" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="relative h-8 w-8">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-foreground">Almost there</h1>
+      <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-foreground">Signup complete</h1>
+      <p className="mt-2 text-sm font-medium text-green-700">
+        Your recruiter account has been created and sent to our admin for approval.
+      </p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Your recruiter account has been created and is waiting on admin approval. You'll be able to sign in
-        as soon as it's approved.
+        You'll be able to sign in as soon as it's approved.
       </p>
       <Button variant="outline" className="mt-6" onClick={onBackToJobs}>
         &larr; Back to job listings
@@ -194,15 +197,14 @@ export function SignIn({ onBackToJobs }: { onBackToJobs: () => void }) {
           formData.set("flow", flow);
           signIn("password", formData)
             .catch((err) => {
-              const message = err instanceof Error ? err.message : String(err);
-              if (message.includes(PENDING_APPROVAL_ERROR)) {
+              if (isPendingApproval(err)) {
                 setPending(true);
                 return;
               }
               setError(
                 flow === "signIn"
                   ? "Couldn't sign in. Check your email and password."
-                  : "Couldn't create an account. " + message
+                  : friendlySignUpError(err),
               );
             })
             .finally(() => setSubmitting(false));
@@ -210,7 +212,15 @@ export function SignIn({ onBackToJobs }: { onBackToJobs: () => void }) {
       >
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" required autoComplete="email" />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            pattern="[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}"
+            title="Enter a valid email address (e.g. name@company.com)."
+          />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="password">Password</Label>
@@ -222,6 +232,11 @@ export function SignIn({ onBackToJobs }: { onBackToJobs: () => void }) {
             minLength={8}
             autoComplete={flow === "signIn" ? "current-password" : "new-password"}
           />
+          {flow === "signUp" && (
+            <p className="text-xs text-muted-foreground">
+              At least 8 characters, with at least one letter and one number.
+            </p>
+          )}
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

@@ -1,17 +1,47 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "../convex/_generated/api";
-import { Id } from "../convex/_generated/dataModel";
+import { Doc, Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { JobApplications } from "@/JobApplications";
+import { CandidateSearch } from "@/CandidateSearch";
+import { RecruiterDashboard } from "@/RecruiterDashboard";
+import { EditJobDialog } from "@/EditJobDialog";
+
+type View = "jobs" | "candidates" | "dashboard";
+const VIEWS: { key: View; label: string }[] = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "jobs", label: "Jobs" },
+  { key: "candidates", label: "Candidates" },
+];
+
+function ViewTabs({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  return (
+    <div className="flex gap-2 border-b border-border">
+      {VIEWS.map((v) => (
+        <button
+          key={v.key}
+          type="button"
+          className={`px-3 py-2 text-sm font-semibold ${
+            view === v.key ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
+          }`}
+          onClick={() => onChange(v.key)}
+        >
+          {v.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function CreateJob() {
   const createJob = useMutation(api.jobs.create);
   const allJobs = useQuery(api.jobs.listAll);
   const [selectedJob, setSelectedJob] = useState<{ id: Id<"jobs">; title: string } | null>(null);
+  const [view, setView] = useState<View>("dashboard");
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -33,9 +63,29 @@ export function CreateJob() {
     );
   }
 
+  if (view === "dashboard") {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <ViewTabs view={view} onChange={setView} />
+        <RecruiterDashboard />
+      </div>
+    );
+  }
+
+  if (view === "candidates") {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <ViewTabs view={view} onChange={setView} />
+        <CandidateSearch />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Post a job</h1>
+      <ViewTabs view={view} onChange={setView} />
+
+      <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground">Post a job</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Fill in the role details and publish a shareable link for candidates.
       </p>
@@ -105,28 +155,83 @@ export function CreateJob() {
       <div className="mt-12">
         <h2 className="text-xl font-bold tracking-tight text-foreground">All jobs</h2>
         <ul className="mt-4 flex flex-col gap-3">
-          {allJobs?.map((job) => (
-            <li key={job._id} className="rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
-              <div className="flex items-center justify-between gap-2">
-                <div className="font-semibold text-foreground">{job.title}</div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedJob({ id: job._id, title: job.title })}
-                >
-                  View applications
-                </Button>
-              </div>
-              <a className="break-all text-primary underline" href={`${publicOrigin}/jobs/${job.slug}`}>
-                {publicOrigin}/jobs/{job.slug}
-              </a>
-            </li>
-          ))}
+          {allJobs?.map((job) => <JobListItem key={job._id} job={job} onViewApplications={setSelectedJob} />)}
           {allJobs?.length === 0 && (
             <li className="text-sm text-muted-foreground">No jobs posted yet.</li>
           )}
         </ul>
       </div>
     </div>
+  );
+}
+
+function JobListItem({
+  job,
+  onViewApplications,
+}: {
+  job: Doc<"jobs">;
+  onViewApplications: (job: { id: Id<"jobs">; title: string }) => void;
+}) {
+  const setVisibility = useMutation(api.jobs.setVisibility);
+  const removeJob = useMutation(api.jobs.remove);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const publicOrigin = window.location.origin;
+
+  return (
+    <li className="rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-foreground">{job.title}</span>
+          {job.status === "private" && (
+            <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              Private
+            </span>
+          )}
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" size="sm" onClick={() => onViewApplications({ id: job._id, title: job.title })}>
+            View applications
+          </Button>
+          <EditJobDialog job={job} />
+        </div>
+      </div>
+      <a className="break-all text-primary underline" href={`${publicOrigin}/jobs/${job.slug}`}>
+        {publicOrigin}/jobs/{job.slug}
+      </a>
+      <div className="mt-3 flex gap-2 border-t border-border pt-3">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={updatingVisibility}
+          onClick={() => {
+            setUpdatingVisibility(true);
+            setVisibility({ jobId: job._id, status: job.status === "private" ? "published" : "private" }).finally(
+              () => setUpdatingVisibility(false),
+            );
+          }}
+        >
+          {job.status === "private" ? "Make public" : "Make private"}
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={deleting}
+          onClick={() => {
+            if (
+              !window.confirm(
+                `Delete "${job.title}"? This permanently removes the job and all of its applications. This can't be undone.`,
+              )
+            ) {
+              return;
+            }
+            setDeleting(true);
+            removeJob({ jobId: job._id }).catch(() => setDeleting(false));
+          }}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </Button>
+      </div>
+    </li>
   );
 }

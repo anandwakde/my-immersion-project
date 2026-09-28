@@ -5,14 +5,19 @@ import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { ApplicationDetail } from "@/ApplicationDetail";
+import { JobRequirements } from "@/JobRequirements";
+import { KanbanBoard } from "@/KanbanBoard";
 
-const STATUS_LABEL: Record<string, string> = {
-  new: "New",
+const STAGE_LABEL: Record<string, string> = {
+  applied: "Applied",
+  ai_screened: "AI Screened",
   shortlisted: "Shortlisted",
-  rejected: "Rejected",
+  interview: "Interview",
+  offer: "Offer",
+  hired: "Hired",
 };
 
-type Tab = "all" | "shortlisted" | "clientFeedback";
+type Tab = "all" | "shortlisted" | "clientFeedback" | "pipeline";
 
 export function JobApplications({
   jobId,
@@ -32,6 +37,7 @@ export function JobApplications({
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
+  const [sortByScore, setSortByScore] = useState(false);
 
   if (selectedApplicationId) {
     return (
@@ -42,15 +48,18 @@ export function JobApplications({
     );
   }
 
-  const shortlisted = applications?.filter((app) => app.status === "shortlisted") ?? [];
-  const visibleApplications = tab === "shortlisted" ? shortlisted : applications;
+  const shortlisted = applications?.filter((app) => app.stage === "shortlisted" && !app.rejected) ?? [];
+  const baseList = tab === "shortlisted" ? shortlisted : applications;
+  const visibleApplications = sortByScore
+    ? baseList && [...baseList].sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))
+    : baseList;
 
   const accepted = shortlisted.filter((app) => app.clientStatus === "accepted").length;
   const rejected = shortlisted.filter((app) => app.clientStatus === "rejected").length;
   const pending = shortlisted.filter((app) => app.clientStatus === undefined).length;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className={`mx-auto px-6 py-12 ${tab === "pipeline" ? "max-w-6xl" : "max-w-2xl"}`}>
       <Button variant="outline" onClick={onBack}>
         &larr; Back to jobs
       </Button>
@@ -58,6 +67,10 @@ export function JobApplications({
       <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
         Applications for {jobTitle}
       </h1>
+
+      <div className="mt-4">
+        <JobRequirements jobId={jobId} />
+      </div>
 
       <div className="mt-4 rounded-lg border border-border bg-card p-4 text-sm shadow-sm">
         <div className="flex items-center justify-between gap-3">
@@ -143,9 +156,20 @@ export function JobApplications({
         >
           Client Feedback
         </button>
+        <button
+          type="button"
+          className={`px-3 py-2 text-sm font-semibold ${
+            tab === "pipeline" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground"
+          }`}
+          onClick={() => setTab("pipeline")}
+        >
+          Pipeline
+        </button>
       </div>
 
-      {tab === "clientFeedback" ? (
+      {tab === "pipeline" ? (
+        <KanbanBoard jobId={jobId} onOpen={setSelectedApplicationId} />
+      ) : tab === "clientFeedback" ? (
         <div className="mt-6 flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
             {accepted} accepted · {rejected} rejected · {pending} awaiting response
@@ -189,7 +213,13 @@ export function JobApplications({
           </ul>
         </div>
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
+        <>
+          <div className="mt-6 flex items-center justify-end">
+            <Button variant="outline" size="sm" onClick={() => setSortByScore((v) => !v)}>
+              {sortByScore ? "Sorted by match score" : "Sort by match score"}
+            </Button>
+          </div>
+          <ul className="mt-2 flex flex-col gap-3">
           {visibleApplications?.map((app) => (
             <li key={app._id}>
               <button
@@ -199,8 +229,20 @@ export function JobApplications({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-foreground">{app.name}</span>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                    {STATUS_LABEL[app.status] ?? app.status}
+                  <span className="flex gap-1.5">
+                    {app.matchScore !== null && (
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">
+                        {app.matchScore}/100
+                      </span>
+                    )}
+                    {app.rejected && (
+                      <span className="rounded-full border border-destructive/30 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Rejected
+                      </span>
+                    )}
+                    <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                      {STAGE_LABEL[app.stage] ?? app.stage}
+                    </span>
                   </span>
                 </div>
                 <div className="mt-1 text-muted-foreground">{app.email} · {app.phone}</div>
@@ -212,7 +254,8 @@ export function JobApplications({
               {tab === "shortlisted" ? "No shortlisted candidates yet." : "No applications yet for this job."}
             </li>
           )}
-        </ul>
+          </ul>
+        </>
       )}
     </div>
   );

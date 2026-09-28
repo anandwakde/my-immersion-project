@@ -1,6 +1,7 @@
 import { Password } from "@convex-dev/auth/providers/Password";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { convexAuth } from "@convex-dev/auth/server";
+import { ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 import { MutationCtx, env } from "./_generated/server";
 import { AnyDataModel, GenericMutationCtx } from "convex/server";
@@ -53,7 +54,42 @@ const ResendPasswordReset = Email({
 // from the client is worse, since it pulls server-only code into the
 // browser bundle (confirmed: caused a "process is not defined" runtime
 // error). Duplicating this one string avoids both.
+//
+// All of these are thrown as ConvexError, never a plain Error — Convex
+// strips a plain Error's message down to a generic "Server Error" on a
+// production deployment (a real bug caught here: this exact redaction
+// silently broke the pending-approval message on prod while working fine
+// against the local dev deployment, which doesn't redact). ConvexError's
+// `data` payload is always delivered to the client, dev or prod alike.
 const PENDING_APPROVAL_ERROR = "PENDING_APPROVAL";
+
+// Sentinel prefix so the client can tell "this message is safe to show
+// verbatim" apart from Convex Auth's own internal errors — see
+// WEAK_PASSWORD_ERROR / INVALID_EMAIL_ERROR in src/lib/authErrors.ts.
+export const WEAK_PASSWORD_ERROR = "WEAK_PASSWORD:";
+const PASSWORD_REQUIREMENTS_MESSAGE =
+  "Password must be at least 8 characters and include at least one letter and one number.";
+
+function validatePasswordRequirements(password: string) {
+  if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    throw new ConvexError(`${WEAK_PASSWORD_ERROR} ${PASSWORD_REQUIREMENTS_MESSAGE}`);
+  }
+}
+
+export const INVALID_EMAIL_ERROR = "INVALID_EMAIL:";
+const INVALID_EMAIL_MESSAGE = "Enter a valid email address (e.g. name@company.com).";
+// Requires a local part, an @, and a domain with at least one dot and a
+// letters-only TLD of 2+ characters — deliberately not tied to a specific
+// list of TLDs (.com/.org/...) so real domains like .io or .dev still work.
+const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+function profile(params: Record<string, unknown>) {
+  const email = typeof params.email === "string" ? params.email.trim() : "";
+  if (!EMAIL_FORMAT.test(email)) {
+    throw new ConvexError(`${INVALID_EMAIL_ERROR} ${INVALID_EMAIL_MESSAGE}`);
+  }
+  return { email };
+}
 
 // The auth callbacks below receive a schema-erased GenericMutationCtx —
 // this project's own tables (like recruiterProfiles) aren't visible on it.
@@ -64,7 +100,7 @@ function typed(ctx: GenericMutationCtx<AnyDataModel>): MutationCtx {
 }
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Password({ reset: ResendPasswordReset })],
+  providers: [Password({ reset: ResendPasswordReset, validatePasswordRequirements, profile })],
   callbacks: {
     // Runs once, right after a brand-new user row is created by a
     // credentials signup (not on subsequent logins — existingUserId is
@@ -99,12 +135,12 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     // times they try.
     async beforeSessionCreation(genericCtx, { userId }) {
       const ctx = typed(genericCtx);
-      const profile = await ctx.db
+      const recruiterProfile = await ctx.db
         .query("recruiterProfiles")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
         .unique();
-      if (profile && profile.status !== "approved") {
-        throw new Error(PENDING_APPROVAL_ERROR);
+      if (recruiterProfile && recruiterProfile.status !== "approved") {
+        throw new ConvexError(PENDING_APPROVAL_ERROR);
       }
     },
   },
