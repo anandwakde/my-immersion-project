@@ -338,6 +338,62 @@
   }
   .attention-row + .attention-row{ margin-top:8px; }
   .attention-days{ flex:none; font-weight:700; color:#b42318; font-size:12.5px; }
+
+  /* ---------- additions: waves 1-4 ---------- */
+  .pwd-list{ list-style:none; margin:6px 0 0; padding:0; font-size:12px; display:flex; flex-direction:column; gap:2px; }
+  .pwd-list li{ color:hsl(var(--muted-foreground)); }
+  .pwd-list li.ok{ color:#067647; }
+  .inline-error{ margin-top:8px; font-size:13px; color:#b42318; }
+  .inline-error button{ font:inherit; color:inherit; background:none; border:0; padding:0; text-decoration:underline; cursor:pointer; font-weight:600; }
+  .pick-box{ margin-top:12px; padding:14px; border:1px dashed hsl(var(--primary) / 0.5); border-radius:var(--radius); background:hsl(var(--accent) / 0.5); }
+  .pick-box .pick-head{ font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:hsl(var(--primary)); }
+  .pick-slot{ margin-top:8px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; text-align:left;
+    font:inherit; font-size:13.5px; padding:10px 12px; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) - 2px); background:#fff; cursor:pointer; }
+  .pick-slot:hover{ border-color:hsl(var(--primary)); }
+  .pick-slot span:last-child{ color:hsl(var(--primary)); font-weight:600; font-size:12.5px; }
+  .linkish{ font:inherit; font-size:12.5px; background:none; border:0; padding:0; margin-top:10px; color:hsl(var(--muted-foreground)); text-decoration:underline; cursor:pointer; }
+  .invite-list{ list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .invite-list li{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) - 2px); font-size:13.5px; background:#fff; }
+  .invite-list li.selected{ border-color:hsl(var(--primary)); background:hsl(var(--accent)); }
+  .invite-list label{ display:flex; align-items:center; gap:8px; cursor:pointer; }
+  .action-grid{ margin-top:10px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  @media (max-width:640px){ .action-grid{ grid-template-columns:1fr; } }
+  .action-card{ display:flex; justify-content:space-between; align-items:center; gap:10px; text-align:left; font:inherit; font-size:13px;
+    padding:11px 12px; border-radius:calc(var(--radius) - 2px); border:1px solid #fedf89; background:#fffaeb; cursor:pointer; }
+  .action-card.calm{ border-color:hsl(var(--primary) / 0.3); background:hsl(var(--accent)); }
+  .action-card:hover, .action-card.active{ border-color:hsl(var(--primary)); box-shadow:0 0 0 2px hsl(var(--primary) / 0.15); }
+  .action-card span:last-child{ color:hsl(var(--primary)); font-weight:700; }
+  .action-list{ margin-top:12px; border:1px solid hsl(var(--border)); border-radius:var(--radius); background:#fff; }
+  .action-list-head{ padding:10px 12px; font-size:13px; font-weight:700; border-bottom:1px solid hsl(var(--border)); }
+  .action-row{ display:flex; justify-content:space-between; gap:10px; padding:9px 12px; font-size:13px; }
+  .action-row + .action-row{ border-top:1px solid hsl(var(--border)); }
+  .action-row small{ color:hsl(var(--muted-foreground)); }
+  .dash-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .bell{ position:relative; flex:none; font:inherit; background:#fff; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) - 2px); padding:7px 9px; cursor:pointer; }
+  .bell-count{ position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; border-radius:999px; background:#d92d20; color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+  .bell-menu{ margin-top:10px; border:1px solid hsl(var(--border)); border-radius:var(--radius); background:#fff; box-shadow:0 8px 24px -12px rgba(16,24,40,0.25); }
+  .bell-item{ padding:9px 12px; font-size:12.5px; }
+  .bell-item + .bell-item{ border-top:1px solid hsl(var(--border)); }
+  .bell-item strong{ display:block; font-size:13px; }
+  .bell-item small{ color:hsl(var(--muted-foreground)); }
+  .chat{ margin-top:12px; display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; }
+  .bubble{ max-width:78%; padding:8px 11px; border-radius:10px; font-size:13px; line-height:1.45; }
+  .bubble small{ display:block; margin-top:3px; font-size:10.5px; opacity:0.75; }
+  .bubble.me{ align-self:flex-end; background:hsl(var(--primary)); color:#fff; }
+  .bubble.them{ align-self:flex-start; background:hsl(var(--accent)); }
+  .chat-form{ margin-top:10px; display:flex; gap:8px; }
+  .chat-form input{ flex:1; min-width:0; font:inherit; font-size:13.5px; padding:8px 10px; border:1px solid hsl(var(--input)); border-radius:calc(var(--radius) - 2px); }
+  .section-box{ margin-top:16px; padding:14px; border:1px solid hsl(var(--border)); border-radius:var(--radius); background:#fff; }
+  .section-box h4{ margin:0 0 6px; font-size:14px; }
+  .check-line{ display:flex; gap:8px; align-items:flex-start; margin-top:10px; font-size:13.5px; }
+  .check-line input{ margin-top:3px; }
+  .app-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 0; font-size:13.5px; }
+  .app-row + .app-row{ border-top:1px solid hsl(var(--border)); }
+  .pill{ font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:hsl(var(--muted)); color:hsl(var(--muted-foreground)); white-space:nowrap; }
+  .pill.green{ background:#dcfae6; color:#067647; }
+  .pill.amber{ background:#fef0c7; color:#93370d; }
+  .pill.blue{ background:hsl(var(--accent)); color:hsl(var(--primary)); }
+  .consent{ display:inline-block; margin-top:6px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; border:1px solid #abefc6; color:#067647; }
 </style>
 
 <header class="top">
@@ -364,13 +420,16 @@
   <div class="tour-layout">
     <div class="tour-nav" id="tourNav">
       <button class="tour-step active" data-panel="how" type="button"><span class="tour-num">1</span><span><strong>How it works</strong><small>Post → shortlist → book</small></span></button>
-      <button class="tour-step" data-panel="0" type="button"><span class="tour-num">2</span><span><strong>Hiring manager accepts &amp; books a slot</strong><small>The flagship moment</small></span></button>
+      <button class="tour-step" data-panel="0" type="button"><span class="tour-num">2</span><span><strong>Hiring manager accepts &amp; books a slot</strong><small>Candidate picks, calendars fill</small></span></button>
       <button class="tour-step" data-panel="1" type="button"><span class="tour-num">3</span><span><strong>Candidate applies</strong><small>Real validation, live</small></span></button>
-      <button class="tour-step" data-panel="2" type="button"><span class="tour-num">4</span><span><strong>Recruiter access</strong><small>Gated sign-up &amp; reset</small></span></button>
+      <button class="tour-step" data-panel="2" type="button"><span class="tour-num">4</span><span><strong>Recruiter access</strong><small>Approval, strong passwords, reset</small></span></button>
       <button class="tour-step" data-panel="3" type="button"><span class="tour-num">5</span><span><strong>AI résumé parsing &amp; match scoring</strong><small>Not just a keyword match</small></span></button>
       <button class="tour-step" data-panel="4" type="button"><span class="tour-num">6</span><span><strong>Pipeline board</strong><small>Drag a candidate through stages</small></span></button>
       <button class="tour-step" data-panel="5" type="button"><span class="tour-num">7</span><span><strong>Search every candidate</strong><small>Across every job, instantly</small></span></button>
-      <button class="tour-step" data-panel="6" type="button"><span class="tour-num">8</span><span><strong>Recruiter dashboard</strong><small>What needs your attention today</small></span></button>
+      <button class="tour-step" data-panel="6" type="button"><span class="tour-num">8</span><span><strong>Recruiter dashboard</strong><small>Action required, one click away</small></span></button>
+      <button class="tour-step" data-panel="7" type="button"><span class="tour-num">9</span><span><strong>Candidate profile</strong><small>Invite to other roles, chat</small></span></button>
+      <button class="tour-step" data-panel="8" type="button"><span class="tour-num">10</span><span><strong>Hire &amp; close the loop</strong><small>Close the job, tell everyone</small></span></button>
+      <button class="tour-step" data-panel="9" type="button"><span class="tour-num">11</span><span><strong>Candidate portal</strong><small>Status, interview, messages</small></span></button>
     </div>
 
     <div class="card demo-page">
@@ -411,7 +470,7 @@
         <div class="hw-step">
           <div class="hw-step-head"><span class="hw-num">3</span><strong>View the résumé, propose interview slots</strong><span class="hw-badge live">Live</span></div>
           <div class="hw-body">
-            <p style="font-size:13.5px;color:hsl(var(--muted-foreground));max-width:52ch;">Propose two slots that fit your schedule — we'll get the interview straight onto your calendar.</p>
+            <p style="font-size:13.5px;color:hsl(var(--muted-foreground));max-width:52ch;">Propose two slots that fit your schedule — the candidate picks one, and everyone gets a calendar invite with the meeting link.</p>
             <div class="btn-row"><button class="btn btn-outline btn-sm" id="hw-jumpBtn" type="button">Try it now →</button></div>
           </div>
         </div>
@@ -539,8 +598,13 @@
         <div id="sa-signup" style="margin-top:6px;">
           <div id="sa-signupForm">
             <div class="field"><label>Email</label><input id="sa-suEmail" value="new.recruiter@example.com" autocomplete="off" /></div>
-            <div class="field"><label>Password</label><input type="password" id="sa-suPass" value="demo-password" autocomplete="off" /></div>
+            <div class="field"><label>Password</label><input type="password" id="sa-suPass" value="" placeholder="Try typing a password" autocomplete="off" />
+              <ul class="pwd-list" id="sa-pwdList"></ul></div>
+            <div class="field"><label>Confirm password</label><input type="password" id="sa-suPass2" autocomplete="off" />
+              <p class="field-error" id="sa-suMismatch" hidden>Passwords don't match yet.</p></div>
+            <p class="inline-error" id="sa-suErr" hidden></p>
             <div class="btn-row"><button class="btn btn-primary" id="sa-suBtn" type="button">Sign up</button></div>
+            <p class="hw-note">Tip: try <strong>recruiter@netlink-group.com</strong> — it already has an account.</p>
           </div>
           <div class="confirm-box" id="sa-suPending" hidden>
             <div class="confirm-check">⏳</div>
@@ -552,7 +616,9 @@
         <div id="sa-forgot" hidden style="margin-top:6px;">
           <div id="sa-forgotStep1">
             <div class="field"><label>Email</label><input id="sa-fpEmail" value="recruiter@netlink-group.com" autocomplete="off" /></div>
+            <p class="inline-error" id="sa-fpEmailErr" hidden></p>
             <div class="btn-row"><button class="btn btn-primary" id="sa-fpSendBtn" type="button">Send reset code</button></div>
+            <p class="hw-note">Tip: try an email with no account, like <strong>someone@example.com</strong>.</p>
           </div>
           <div id="sa-forgotStep2" hidden>
             <p style="margin-top:4px;font-size:13px;color:hsl(var(--muted-foreground));max-width:360px;">A 6-digit code was just emailed. (Demo: type any 6 digits.)</p>
@@ -682,8 +748,18 @@
 
       <!-- ================= PANEL 6: recruiter dashboard ================= -->
       <div class="panel" id="panel-6" hidden>
-        <div class="demo-job-title" style="font-size:20px;">Recruiter dashboard</div>
-        <div class="demo-job-sub">One screen for what's moving, and what's been sitting too long</div>
+        <div class="dash-top">
+          <div>
+            <div class="demo-job-title" style="font-size:20px;">Recruiter dashboard</div>
+            <div class="demo-job-sub">One screen for what needs doing today — every item is one click from action</div>
+          </div>
+          <button class="bell" id="db-bell" type="button" aria-label="Notifications, 3 unread">🔔<span class="bell-count" id="db-bellCount">3</span></button>
+        </div>
+        <div class="bell-menu" id="db-bellMenu" hidden>
+          <div class="bell-item"><strong>New application: Arjun Mehta</strong><small>Cards Business Analyst · 4 min ago</small></div>
+          <div class="bell-item"><strong>Interview confirmed: Meera Nair</strong><small>Senior Product Owner — Payments · 1 h ago</small></div>
+          <div class="bell-item"><strong>Client accepted Priya Singh</strong><small>Candidate emailed to pick a slot · 3 h ago</small></div>
+        </div>
 
         <div class="kpi-grid">
           <div class="kpi-card"><div class="kpi-num">6</div><div class="kpi-label">Published jobs</div></div>
@@ -703,11 +779,118 @@
         </div>
 
         <div style="margin-top:26px;">
-          <strong style="font-size:14.5px;color:#b42318;">Needs attention — no movement in 5+ days</strong>
-          <div style="margin-top:10px;">
-            <div class="attention-row"><span><strong>Sanjay Kulkarni</strong> — Data Engineer</span><span class="attention-days">11d stuck</span></div>
-            <div class="attention-row"><span><strong>Fatima Sheikh</strong> — Support Engineer</span><span class="attention-days">6d stuck</span></div>
+          <strong style="font-size:14.5px;">Action required</strong>
+          <div class="action-grid" id="db-actions">
+            <button type="button" class="action-card calm" data-key="new"><span>6 new applications to review</span><span>→</span></button>
+            <button type="button" class="action-card" data-key="undecided"><span>4 candidates not yet shortlisted or rejected</span><span>→</span></button>
+            <button type="button" class="action-card calm" data-key="client"><span>3 client responses pending</span><span>→</span></button>
+            <button type="button" class="action-card" data-key="schedule"><span>2 interviews need scheduling</span><span>→</span></button>
+            <button type="button" class="action-card calm" data-key="today"><span>1 interview scheduled for today</span><span>→</span></button>
+            <button type="button" class="action-card" data-key="decide"><span>2 candidates awaiting your decision after interview</span><span>→</span></button>
           </div>
+          <div class="action-list" id="db-actionList" hidden></div>
+        </div>
+      </div>
+
+      <!-- ================= PANEL 7: candidate profile, invite, chat ================= -->
+      <div class="panel" id="panel-7" hidden>
+        <div class="profile-row">
+          <div>
+            <div class="demo-job-title">Meera Nair</div>
+            <div class="demo-job-sub">Senior Product Manager, Payments · Bengaluru · 9 years</div>
+            <span class="consent">Agreed to be contacted about other roles</span>
+          </div>
+          <button class="btn btn-primary btn-sm" id="cp-inviteBtn" type="button">Invite to apply</button>
+        </div>
+        <p class="hw-note">Click any candidate's name anywhere in the platform and you land here — every application, résumé, parsed profile and message in one place.</p>
+
+        <div class="section-box">
+          <h4>Applications</h4>
+          <div class="app-row"><span>Senior Product Owner — Payments</span><span class="pill amber">Interview</span></div>
+          <div class="app-row"><span>Product Analyst — Cards <small style="color:hsl(var(--muted-foreground));">· 2025</small></span><span class="pill">Rejected</span></div>
+        </div>
+
+        <div class="section-box" id="cp-invite" hidden>
+          <h4>Invite Meera to apply</h4>
+          <p style="font-size:13px;color:hsl(var(--muted-foreground));">Pick an open role. Fit scores are worked out on demand, one role at a time.</p>
+          <ul class="invite-list" id="cp-jobs"></ul>
+          <div class="btn-row"><button class="btn btn-primary btn-sm" id="cp-sendBtn" type="button" disabled>Send invite</button></div>
+          <div class="confirm-box" id="cp-sent" hidden><div class="confirm-check">✓</div><div><strong>Invite sent</strong><p id="cp-sentText"></p></div></div>
+        </div>
+
+        <div class="section-box">
+          <h4>Messages</h4>
+          <div class="chat" id="cp-chat">
+            <div class="bubble them">Hi, should I bring anything to the interview?<small>Meera · 10:12</small></div>
+          </div>
+          <form class="chat-form" id="cp-chatForm" onsubmit="return false;">
+            <input id="cp-chatInput" placeholder="Reply — Meera gets an email to read it in her portal" autocomplete="off" />
+            <button class="btn btn-primary btn-sm" type="submit">Send</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= PANEL 8: hire and close the loop ================= -->
+      <div class="panel" id="panel-8" hidden>
+        <div class="demo-job-title">Meera Nair — Senior Product Owner — Payments</div>
+        <div class="demo-job-sub">Interview done · client said yes · time to make it official</div>
+
+        <div class="section-box" id="hi-step1">
+          <h4>Mark as hired</h4>
+          <label class="check-line"><input type="checkbox" id="hi-close" checked /><span><strong>Position filled — close the job.</strong> It comes off the job board; reopen any time.</span></label>
+          <label class="check-line"><input type="checkbox" id="hi-email" checked /><span><strong>Email Meera</strong> a congratulations / next-steps message.</span></label>
+          <div class="btn-row"><button class="btn btn-primary btn-sm" id="hi-hireBtn" type="button">Confirm hire</button></div>
+        </div>
+
+        <div id="hi-done" hidden>
+          <div class="confirm-box"><div class="confirm-check">✓</div><div><strong>Meera is hired</strong><p id="hi-doneText"></p></div></div>
+          <div class="section-box" id="hi-others">
+            <h4>2 other candidates are still in the running</h4>
+            <div class="app-row"><span>Priya Singh</span><span class="pill amber">Interview</span></div>
+            <div class="app-row"><span>Rahul Sharma</span><span class="pill blue">Shortlisted</span></div>
+            <p class="hw-note">Nobody is emailed automatically — you decide.</p>
+            <div class="btn-row"><button class="btn btn-outline btn-sm" id="hi-notifyBtn" type="button">Notify other candidates</button></div>
+          </div>
+          <div class="confirm-box" id="hi-notified" hidden><div class="confirm-check">✓</div><div><strong>2 candidates notified</strong><p>Both marked "Not selected" and sent a polite thank-you email. Their portals update instantly — and they stay in your candidate pool for the next role.</p></div></div>
+          <div class="reset-line"><button type="button" id="hi-resetBtn">↺ Reset, try it again</button></div>
+        </div>
+      </div>
+
+      <!-- ================= PANEL 9: candidate portal ================= -->
+      <div class="panel" id="panel-9" hidden>
+        <div class="demo-job-title" style="font-size:20px;">My applications</div>
+        <div class="demo-job-sub">What candidates see — no password, just a one-time code to the email they applied with</div>
+
+        <div id="po-signin" style="margin-top:16px;">
+          <div id="po-step1">
+            <div class="field"><label>Email</label><input id="po-email" value="meera.nair@example.com" autocomplete="off" /></div>
+            <div class="btn-row"><button class="btn btn-primary" id="po-sendBtn" type="button">Send me a code</button></div>
+          </div>
+          <div id="po-step2" hidden>
+            <p style="font-size:13px;color:hsl(var(--muted-foreground));max-width:380px;">A 6-digit code was just emailed. (Demo: type any 6 digits.)</p>
+            <div class="field"><label>6-digit code</label><input id="po-code" inputmode="numeric" maxlength="6" autocomplete="off" /></div>
+            <p class="field-error" id="po-err" hidden></p>
+            <div class="btn-row"><button class="btn btn-primary" id="po-signinBtn" type="button">Sign in</button></div>
+          </div>
+        </div>
+
+        <div id="po-portal" hidden>
+          <div class="section-box">
+            <h4>Hi Meera</h4>
+            <div class="app-row"><span><strong>Senior Product Owner — Payments</strong><br /><small style="color:hsl(var(--muted-foreground));">Interview: Thu 2 Oct, 10:00 · <a href="#" style="color:hsl(var(--primary));" onclick="return false;">Join meeting</a> · Add to calendar</small></span><span class="pill amber">Interview</span></div>
+            <div class="app-row"><span><strong>Cards Business Analyst</strong><br /><small style="color:hsl(var(--muted-foreground));">Applied 24 Sep</small></span><span class="pill">Under review</span></div>
+          </div>
+          <div class="section-box">
+            <h4>Messages with the hiring team</h4>
+            <div class="chat" id="po-chat">
+              <div class="bubble them">Congratulations on reaching the interview stage! Please bring a photo ID.<small>Netlink hiring team · 09:40</small></div>
+            </div>
+            <form class="chat-form" id="po-chatForm" onsubmit="return false;">
+              <input id="po-chatInput" placeholder="Write to the hiring team" autocomplete="off" />
+              <button class="btn btn-primary btn-sm" type="submit">Send</button>
+            </form>
+          </div>
+          <p class="hw-note">Internal stages and client feedback are never shown — candidates see plain statuses like "Under review", "Interview" or "Not selected".</p>
         </div>
       </div>
 
@@ -715,7 +898,7 @@
   </div>
 
   <div class="closing">
-    <p>One-stop hiring and onboarding — get the talent you need, without the stress. Eight pieces of the platform above — this is the real product, not mockups.</p>
+    <p>One-stop hiring and onboarding — get the talent you need, without the stress. Eleven pieces of the platform above — this is the real product, not mockups.</p>
     <div class="closing-links">
       <a class="btn btn-primary btn-sm" href="mailto:recruitment@netlink-group.com?subject=Netlink%20Recruitment%20OS%20-%20let%27s%20talk">Email us</a>
     </div>
@@ -835,6 +1018,7 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
           '<span class="badge" data-role="badge" hidden></span>' +
         '</div>' +
         '<p class="slot-line" data-role="slotLine" hidden></p>' +
+        '<div class="pick-box" data-role="pickBox" hidden></div>' +
         '<p class="reason-line" data-role="reasonLine" hidden></p>' +
         '<div class="resume-row">' +
           '<p>Resume of the candidate</p>' +
@@ -888,9 +1072,10 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
     var reasonLine = card.querySelector('[data-role="reasonLine"]');
     var resetLine = card.querySelector('[data-role="resetLine"]');
     var resetBtn = card.querySelector('[data-role="resetBtn"]');
+    var pickBox = card.querySelector('[data-role="pickBox"]');
 
     acceptBtn.addEventListener('click', function(){
-      activeCard = { candidate: candidate, badge: badge, slotLine: slotLine, decisionBtns: decisionBtns, resetLine: resetLine };
+      activeCard = { candidate: candidate, badge: badge, slotLine: slotLine, decisionBtns: decisionBtns, resetLine: resetLine, pickBox: pickBox };
       modalDesc.textContent = 'Offer two date and time options for ' + candidate.fullName + "'s interview, in your local time.";
       slotInput.value = '';
       slotInput2.value = '';
@@ -927,6 +1112,8 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
     resetBtn.addEventListener('click', function(){
       badge.hidden = true;
       slotLine.hidden = true;
+      pickBox.hidden = true;
+      pickBox.innerHTML = '';
       reasonLine.hidden = true;
       rejectPanel.hidden = true;
       reasonInput.value = '';
@@ -939,6 +1126,34 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
   overlay.addEventListener('click', function(e){
     if (e.target === overlay) overlay.classList.remove('open');
   });
+
+  // After the hiring manager accepts: the candidate is emailed a link, picks
+  // one of the two slots (shown in their own time zone), and everyone gets a
+  // calendar invite with the meeting link.
+  function showCandidatePick(card, slots){
+    var box = card.pickBox;
+    var first = card.candidate.fullName.split(' ')[0];
+    var fmt = function(d){ return d.toLocaleString(undefined, { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', timeZoneName:'short' }); };
+    box.innerHTML =
+      '<div class="pick-head">↓ ' + first + ' gets an email and picks a time (their time zone) ↓</div>' +
+      slots.map(function(d, i){ return '<button type="button" class="pick-slot" data-i="' + i + '"><span>' + fmt(d) + '</span><span>Choose this time</span></button>'; }).join('') +
+      '<button type="button" class="linkish" data-role="neither">Neither time works for me</button>';
+    box.hidden = false;
+    box.querySelectorAll('.pick-slot').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var d = slots[Number(btn.getAttribute('data-i'))];
+        var room = 'https://meet.jit.si/Netlink-PaymentsPO-' + Math.random().toString(16).slice(2, 10);
+        card.badge.textContent = 'Interview confirmed';
+        box.innerHTML =
+          '<div class="pick-head">Interview confirmed</div>' +
+          '<p style="margin-top:6px;font-size:14px;"><strong>' + fmt(d) + '</strong></p>' +
+          '<p style="margin-top:6px;font-size:13px;color:hsl(var(--muted-foreground));">Calendar invites (.ics) just went to ' + first + ', you and the recruiter — Google, Outlook and Apple calendars all accept them. Meeting link: <a href="' + room + '" target="_blank" rel="noopener noreferrer" style="color:hsl(var(--primary));">' + room.replace('https://', '') + '</a></p>';
+      });
+    });
+    box.querySelector('[data-role="neither"]').addEventListener('click', function(){
+      box.innerHTML = '<div class="pick-head">New times requested</div><p style="margin-top:6px;font-size:13px;color:hsl(var(--muted-foreground));">' + first + ' said neither slot works. The recruiter is notified straight away and proposes new times in two clicks — no email back-and-forth.</p>';
+    });
+  }
 
   confirmAccept.addEventListener('click', function(){
     if (!activeCard) return;
@@ -982,6 +1197,7 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
     activeCard.slotLine.hidden = false;
     activeCard.decisionBtns.hidden = true;
     activeCard.resetLine.hidden = false;
+    showCandidatePick(activeCard, [picked, picked2]);
     activeCard = null;
   });
 })();
@@ -1089,11 +1305,43 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
   var signupForm = document.getElementById('sa-signupForm');
   var suPending = document.getElementById('sa-suPending');
   var suResetLine = document.getElementById('sa-suResetLine');
+  var EXISTING = ['recruiter@netlink-group.com'];
+  var RULES = [
+    ['At least 8 characters', function(p){ return p.length >= 8; }],
+    ['An uppercase letter', function(p){ return /[A-Z]/.test(p); }],
+    ['A lowercase letter', function(p){ return /[a-z]/.test(p); }],
+    ['A number', function(p){ return /[0-9]/.test(p); }],
+    ['A symbol (e.g. ! @ # $)', function(p){ return /[^A-Za-z0-9]/.test(p); }]
+  ];
+  var suEmail = document.getElementById('sa-suEmail');
+  var suPass = document.getElementById('sa-suPass');
+  var suPass2 = document.getElementById('sa-suPass2');
+  var pwdList = document.getElementById('sa-pwdList');
+  var suMismatch = document.getElementById('sa-suMismatch');
+  var suErr = document.getElementById('sa-suErr');
+  function renderRules(){
+    pwdList.innerHTML = RULES.map(function(r){ var ok = r[1](suPass.value); return '<li class="' + (ok ? 'ok' : '') + '">' + (ok ? '✓ ' : '○ ') + r[0] + '</li>'; }).join('');
+    suMismatch.hidden = !suPass2.value || suPass2.value === suPass.value;
+  }
+  suPass.addEventListener('input', renderRules);
+  suPass2.addEventListener('input', renderRules);
+  renderRules();
   document.getElementById('sa-suBtn').addEventListener('click', function(){
+    suErr.hidden = true;
+    var email = suEmail.value.trim().toLowerCase();
+    if (!RULES.every(function(r){ return r[1](suPass.value); })) { suErr.textContent = "Your password doesn't meet all the requirements above."; suErr.hidden = false; return; }
+    if (suPass.value !== suPass2.value) { suErr.textContent = "The two passwords don't match."; suErr.hidden = false; return; }
+    if (EXISTING.indexOf(email) !== -1) {
+      suErr.innerHTML = 'This email is already registered. <button type="button" id="sa-goSignin">Sign in instead</button>';
+      suErr.hidden = false;
+      document.getElementById('sa-goSignin').addEventListener('click', function(){ document.getElementById('sa-tabForgot').click(); });
+      return;
+    }
     signupForm.hidden = true; suPending.hidden = false; suResetLine.hidden = false;
   });
   document.getElementById('sa-suResetBtn').addEventListener('click', function(){
     signupForm.hidden = false; suPending.hidden = true; suResetLine.hidden = true;
+    suPass.value = ''; suPass2.value = ''; suErr.hidden = true; renderRules();
   });
 
   // forgot-password sub-flow
@@ -1106,6 +1354,14 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
   var fpErr = document.getElementById('sa-fpErr');
 
   document.getElementById('sa-fpSendBtn').addEventListener('click', function(){
+    var email = document.getElementById('sa-fpEmail').value.trim().toLowerCase();
+    var emailErr = document.getElementById('sa-fpEmailErr');
+    if (EXISTING.indexOf(email) === -1) {
+      emailErr.textContent = "There's no recruiter account with this email on this site. Check the spelling, or sign up first.";
+      emailErr.hidden = false;
+      return;
+    }
+    emailErr.hidden = true;
     step1.hidden = true; step2.hidden = false;
   });
 
@@ -1114,8 +1370,8 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
     if (codeDigits.length !== 6) {
       fpErr.textContent = 'Enter the 6-digit code.'; fpErr.hidden = false; return;
     }
-    if (fpNewPass.value.length < 8) {
-      fpErr.textContent = 'New password must be at least 8 characters.'; fpErr.hidden = false; return;
+    if (!RULES.every(function(r){ return r[1](fpNewPass.value); })) {
+      fpErr.textContent = 'Password needs 8+ characters with an uppercase letter, a lowercase letter, a number and a symbol.'; fpErr.hidden = false; return;
     }
     fpErr.hidden = true;
     step2.hidden = true; fpDone.hidden = false; fpResetLine.hidden = false;
@@ -1264,5 +1520,119 @@ var goToTourPanel; // exposed for the "Try it now" jump button in panel-how
   minExpInput.addEventListener('input', render);
   locationInput.addEventListener('input', render);
   render();
+})();
+
+// ---------- additions: dashboard bell + action cards ----------
+(function(){
+  var bell = document.getElementById('db-bell');
+  var menu = document.getElementById('db-bellMenu');
+  bell.addEventListener('click', function(){
+    menu.hidden = !menu.hidden;
+    document.getElementById('db-bellCount').hidden = true;
+    bell.setAttribute('aria-label', 'Notifications');
+  });
+  var LISTS = {
+    new: ['New applications to review', [['Arjun Mehta', 'Cards Business Analyst · 4 min ago'], ['Leela Rao', 'Data Engineer · today'], ['Karan Patel', 'Support Engineer · yesterday']]],
+    undecided: ['Not yet shortlisted or rejected', [['Sanjay Kulkarni', 'Data Engineer · applied 11 days ago'], ['Fatima Sheikh', 'Support Engineer · applied 6 days ago']]],
+    client: ['Client responses pending', [['Priya Singh', 'Senior Product Owner — Payments · link sent 2 days ago'], ['John Doe', 'Senior Product Owner — Payments · link sent 2 days ago']]],
+    schedule: ['Interviews needing scheduling', [['Peter Parker', 'Asked for different times: "weekdays after 4pm"'], ['Ravi Iyer', 'Proposed times have passed']]],
+    today: ['Interviews today', [['Meera Nair', '15:00 · Senior Product Owner — Payments · meeting link ready']]],
+    decide: ['Awaiting your decision after interview', [['Anita Desai', 'Cards Business Analyst · interviewed Monday'], ['Vikram Singh', 'T-24 Consultant · interviewed Friday']]]
+  };
+  var list = document.getElementById('db-actionList');
+  document.querySelectorAll('#db-actions .action-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      document.querySelectorAll('#db-actions .action-card').forEach(function(c){ c.classList.toggle('active', c === card); });
+      var data = LISTS[card.getAttribute('data-key')];
+      list.innerHTML = '<div class="action-list-head">' + data[0] + '</div>' +
+        data[1].map(function(r){ return '<div class="action-row"><strong>' + r[0] + '</strong><small>' + r[1] + '</small></div>'; }).join('');
+      list.hidden = false;
+    });
+  });
+})();
+
+// ---------- additions: candidate profile — invite + chat ----------
+(function(){
+  var JOBS = [
+    { title: 'Product Owner — Cards', score: 84 },
+    { title: 'Payments Business Analyst', score: 78 },
+    { title: 'Data Engineer', score: 31 }
+  ];
+  var box = document.getElementById('cp-invite');
+  var ul = document.getElementById('cp-jobs');
+  var sendBtn = document.getElementById('cp-sendBtn');
+  var selected = null;
+  function render(){
+    ul.innerHTML = JOBS.map(function(j, i){
+      return '<li class="' + (selected === i ? 'selected' : '') + '"><label><input type="radio" name="cp-job" data-i="' + i + '"' + (selected === i ? ' checked' : '') + ' /> ' + j.title + '</label>' +
+        (j.shown ? '<span class="score-badge ' + (j.score >= 70 ? 'strong' : j.score >= 40 ? 'medium' : 'weak') + '">' + j.score + '/100</span>'
+                 : '<button type="button" class="btn btn-outline btn-sm" data-score="' + i + '">' + (j.loading ? 'Scoring…' : 'Score') + '</button>') + '</li>';
+    }).join('');
+    ul.querySelectorAll('input[name="cp-job"]').forEach(function(r){ r.addEventListener('change', function(){ selected = Number(r.getAttribute('data-i')); sendBtn.disabled = false; render(); }); });
+    ul.querySelectorAll('[data-score]').forEach(function(b){ b.addEventListener('click', function(){
+      var j = JOBS[Number(b.getAttribute('data-score'))]; j.loading = true; render();
+      setTimeout(function(){ j.loading = false; j.shown = true; render(); }, 900);
+    }); });
+  }
+  document.getElementById('cp-inviteBtn').addEventListener('click', function(){
+    box.hidden = false; selected = null; sendBtn.disabled = true;
+    document.getElementById('cp-sent').hidden = true; sendBtn.hidden = false;
+    JOBS.forEach(function(j){ j.shown = false; j.loading = false; });
+    render();
+  });
+  sendBtn.addEventListener('click', function(){
+    if (selected === null) return;
+    document.getElementById('cp-sentText').textContent = 'Meera just got an email inviting her to apply for ' + JOBS[selected].title + ', with a link to the job page.';
+    document.getElementById('cp-sent').hidden = false; sendBtn.hidden = true;
+  });
+
+  function wireChat(formId, inputId, chatId, mine, replyText, replyFrom){
+    var form = document.getElementById(formId), input = document.getElementById(inputId), chat = document.getElementById(chatId);
+    form.addEventListener('submit', function(){
+      var text = input.value.trim(); if (!text) return;
+      var now = new Date().toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+      var b = document.createElement('div'); b.className = 'bubble me'; b.textContent = text;
+      var sm = document.createElement('small'); sm.textContent = mine + ' · ' + now; b.appendChild(sm);
+      chat.appendChild(b); input.value = ''; chat.scrollTop = chat.scrollHeight;
+      setTimeout(function(){
+        var r = document.createElement('div'); r.className = 'bubble them'; r.textContent = replyText;
+        var s2 = document.createElement('small'); s2.textContent = replyFrom + ' · ' + now; r.appendChild(s2);
+        chat.appendChild(r); chat.scrollTop = chat.scrollHeight;
+      }, 1200);
+    });
+  }
+  wireChat('cp-chatForm', 'cp-chatInput', 'cp-chat', 'You', 'Thanks, see you then!', 'Meera');
+  wireChat('po-chatForm', 'po-chatInput', 'po-chat', 'You', 'Thanks Meera — noted. See you Thursday.', 'Netlink hiring team');
+})();
+
+// ---------- additions: hire & close the loop ----------
+(function(){
+  var step1 = document.getElementById('hi-step1'), done = document.getElementById('hi-done');
+  document.getElementById('hi-hireBtn').addEventListener('click', function(){
+    var close = document.getElementById('hi-close').checked, email = document.getElementById('hi-email').checked;
+    document.getElementById('hi-doneText').textContent =
+      (email ? 'Meera has been emailed the good news. ' : 'No email sent to Meera. ') +
+      (close ? 'The job is closed and off the job board. ' : 'The job stays open. ') + 'The client got a "position filled" confirmation.';
+    step1.hidden = true; done.hidden = false;
+    document.getElementById('hi-others').hidden = false; document.getElementById('hi-notified').hidden = true;
+  });
+  document.getElementById('hi-notifyBtn').addEventListener('click', function(){
+    document.getElementById('hi-others').hidden = true; document.getElementById('hi-notified').hidden = false;
+  });
+  document.getElementById('hi-resetBtn').addEventListener('click', function(){ step1.hidden = false; done.hidden = true; });
+})();
+
+// ---------- additions: candidate portal ----------
+(function(){
+  document.getElementById('po-sendBtn').addEventListener('click', function(){
+    document.getElementById('po-step1').hidden = true; document.getElementById('po-step2').hidden = false;
+  });
+  document.getElementById('po-signinBtn').addEventListener('click', function(){
+    var code = document.getElementById('po-code').value.replace(/\D/g, '');
+    var err = document.getElementById('po-err');
+    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code from your email.'; err.hidden = false; return; }
+    err.hidden = true;
+    document.getElementById('po-signin').hidden = true; document.getElementById('po-portal').hidden = false;
+  });
 })();
 </script>
