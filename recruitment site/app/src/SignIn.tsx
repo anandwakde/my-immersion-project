@@ -47,6 +47,7 @@ function ForgotPasswordRequestForm({
   onCodeSent: (email: string) => void;
 }) {
   const { signIn } = useAuthActions();
+  const convex = useConvex();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -66,13 +67,21 @@ function ForgotPasswordRequestForm({
           setError(null);
           setSubmitting(true);
           const formData = new FormData(e.currentTarget);
-          const email = String(formData.get("email"));
+          const email = String(formData.get("email")).trim();
+          formData.set("email", email);
           formData.set("flow", "reset");
-          signIn("password", formData)
-            .then(() => onCodeSent(email))
-            .catch((err) => {
-              setError(err instanceof Error ? err.message : "Couldn't send a reset code. Check the email and try again.");
+          // Convex Auth's own "no such account" error is hidden on
+          // production, so check first and say it plainly.
+          convex
+            .query(api.recruiterAuth.isEmailRegistered, { email })
+            .then((registered) => {
+              if (!registered) {
+                setError("There's no recruiter account with this email on this site. Check the spelling, or sign up first.");
+                return;
+              }
+              return signIn("password", formData).then(() => onCodeSent(email));
             })
+            .catch(() => setError("Couldn't send a reset code. Please try again in a minute."))
             .finally(() => setSubmitting(false));
         }}
       >
